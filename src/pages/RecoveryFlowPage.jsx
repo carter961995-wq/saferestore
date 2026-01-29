@@ -185,6 +185,7 @@ export default function RecoveryFlowPage() {
           <button
             className="rounded-full bg-ocean px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
             type="button"
+            onClick={() => navigate("/concierge")}
           >
             Continue with Concierge
           </button>

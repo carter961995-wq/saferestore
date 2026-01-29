@@ -2,7 +2,9 @@ import { Link, NavLink } from "react-router-dom";
 
 const navLinkClass = ({ isActive }) =>
   `text-sm font-medium transition-colors ${
-    isActive ? "text-ocean" : "text-slate-600 hover:text-ocean"
+    isActive
+      ? "text-ocean underline underline-offset-8 decoration-ocean/40"
+      : "text-slate-600 hover:text-ocean"
   }`;
 
 export default function Layout({ children }) {
