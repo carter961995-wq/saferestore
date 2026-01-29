@@ -23,6 +23,9 @@ export default function Layout({ children }) {
             <NavLink to="/concierge" className={navLinkClass}>
               Concierge Chat
             </NavLink>
+            <NavLink to="/trust" className={navLinkClass}>
+              Trust Center
+            </NavLink>
           </nav>
         </div>
       </header>
