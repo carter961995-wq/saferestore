@@ -10,6 +10,7 @@ import CaseSummary from "./pages/CaseSummary.jsx";
 import EventsPage from "./pages/EventsPage.jsx";
 import { logEvent } from "./lib/analytics.js";
 import Privacy from "./pages/Privacy.jsx";
+import NotFound from "./pages/NotFound.jsx";
 
 export default function App() {
   const location = useLocation();
@@ -31,6 +32,7 @@ export default function App() {
         {import.meta.env.DEV ? (
           <Route path="/events" element={<EventsPage />} />
         ) : null}
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>
   );
