@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { logEvent } from "../lib/analytics.js";
 
 export default function CaseSummary() {
   const [whatHappened, setWhatHappened] = useState("");
@@ -60,12 +61,14 @@ export default function CaseSummary() {
     }
     if (!navigator?.clipboard?.writeText) return;
     await navigator.clipboard.writeText(summaryText);
+    logEvent("case_summary_copied");
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1600);
   };
 
   const handleClear = () => {
     localStorage.removeItem("saferestore_caseData");
+    logEvent("case_cleared");
     setWhatHappened("");
     setIphoneModel("");
     setIosVersion("");

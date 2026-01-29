@@ -1,4 +1,5 @@
-import { Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import { Routes, Route, useLocation } from "react-router-dom";
 import Layout from "./components/Layout.jsx";
 import LandingPage from "./pages/LandingPage.jsx";
 import RecoveryFlowPage from "./pages/RecoveryFlowPage.jsx";
@@ -6,8 +7,16 @@ import ConciergeChat from "./pages/ConciergeChat.jsx";
 import TrustCenter from "./pages/TrustCenter.jsx";
 import Pricing from "./pages/Pricing.jsx";
 import CaseSummary from "./pages/CaseSummary.jsx";
+import EventsPage from "./pages/EventsPage.jsx";
+import { logEvent } from "./lib/analytics.js";
 
 export default function App() {
+  const location = useLocation();
+
+  useEffect(() => {
+    logEvent("page_view", { path: location.pathname });
+  }, [location.pathname]);
+
   return (
     <Layout>
       <Routes>
@@ -17,6 +26,9 @@ export default function App() {
         <Route path="/trust" element={<TrustCenter />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/case-summary" element={<CaseSummary />} />
+        {import.meta.env.DEV ? (
+          <Route path="/events" element={<EventsPage />} />
+        ) : null}
       </Routes>
     </Layout>
   );

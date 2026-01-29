@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { logEvent } from "../lib/analytics.js";
 
 const initialMessages = [
   {
@@ -61,6 +62,7 @@ export default function ConciergeChat() {
         ...prev,
         { role: "assistant", text: data.message },
       ]);
+      logEvent("concierge_ai_response_received");
     } catch (err) {
       setError(true);
     } finally {
@@ -74,6 +76,7 @@ export default function ConciergeChat() {
     const nextMessages = [...chatMessages, { role: "user", text: trimmed }];
     setChatMessages(nextMessages);
     setInput("");
+    logEvent("concierge_message_sent");
 
     const payload = {
       messages: nextMessages

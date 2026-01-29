@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { logEvent } from "../lib/analytics.js";
 
 export default function RecoveryFlowPage() {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ export default function RecoveryFlowPage() {
     unsure: false,
   });
   const [showValidation, setShowValidation] = useState(false);
+  const stepLoggedRef = useRef({ step1: false, step2: false, step3: false });
 
   const toggleAccess = (key) => {
     setAccessOptions((prev) => ({ ...prev, [key]: !prev[key] }));
@@ -36,6 +38,28 @@ export default function RecoveryFlowPage() {
     .join(", ");
 
   useEffect(() => {
+    if (!stepLoggedRef.current.step1 && incident) {
+      logEvent("recovery_step_completed", { step: 1 });
+      stepLoggedRef.current.step1 = true;
+    }
+  }, [incident]);
+
+  useEffect(() => {
+    if (!stepLoggedRef.current.step2 && isDeviceModelValid) {
+      logEvent("recovery_step_completed", { step: 2 });
+      stepLoggedRef.current.step2 = true;
+    }
+  }, [isDeviceModelValid]);
+
+  useEffect(() => {
+    const hasAccessSelection = Object.values(accessOptions).some(Boolean);
+    if (!stepLoggedRef.current.step3 && hasAccessSelection) {
+      logEvent("recovery_step_completed", { step: 3 });
+      stepLoggedRef.current.step3 = true;
+    }
+  }, [accessOptions]);
+
+  useEffect(() => {
     const caseData = {
       incident,
       deviceModel,
@@ -54,11 +78,13 @@ export default function RecoveryFlowPage() {
 
   const handleContinueConcierge = () => {
     if (!validateRequired()) return;
+    logEvent("recovery_plan_viewed");
     navigate("/concierge");
   };
 
   const handleCaseSummary = () => {
     if (!validateRequired()) return;
+    logEvent("recovery_plan_viewed");
     const caseData = {
       incident,
       deviceModel,
