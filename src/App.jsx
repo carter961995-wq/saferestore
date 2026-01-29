@@ -9,7 +9,7 @@ import Pricing from "./pages/Pricing.jsx";
 import CaseSummary from "./pages/CaseSummary.jsx";
 import EventsPage from "./pages/EventsPage.jsx";
 import { logEvent } from "./lib/analytics.js";
-import Privacy from "./pages/Privacy.jsx";
+import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
 import NotFound from "./pages/NotFound.jsx";
 
 export default function App() {
@@ -28,7 +28,7 @@ export default function App() {
         <Route path="/trust" element={<TrustCenter />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/case-summary" element={<CaseSummary />} />
-        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
         {import.meta.env.DEV ? (
           <Route path="/events" element={<EventsPage />} />
         ) : null}

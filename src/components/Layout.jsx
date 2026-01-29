@@ -42,8 +42,13 @@ export default function Layout({ children }) {
       </header>
       <main className="mx-auto max-w-4xl px-6 py-12">{children}</main>
       <footer className="border-t border-sky bg-white/80">
-        <div className="mx-auto max-w-4xl px-6 py-6 text-xs text-slate-500">
+        <div className="mx-auto max-w-4xl space-y-2 px-6 py-6 text-xs text-slate-500">
           Your data. Your control. Official paths only.
+          <div>
+            <Link to="/privacy" className="font-semibold text-slate-500 underline">
+              Privacy Policy
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
