@@ -1,15 +1,27 @@
 const messages = [
   {
     role: "assistant",
-    text: "Hi, I’m SafeRestore. I can guide you through official recovery steps. What happened to your device?",
+    text: "Hi — I’m your SafeRestore concierge.\n\nI’m here to help you recover your data using the safest official options available. We’ll take this one step at a time.",
   },
   {
     role: "user",
-    text: "My iPhone screen is broken, but it still turns on.",
+    text: "My iPhone was damaged and I’m worried about my photos.",
   },
   {
     role: "assistant",
-    text: "Thanks for sharing. If you can unlock the device, we’ll prioritize a Quick Start transfer and confirm your latest iCloud backup.",
+    text: "You’re not alone in this — we’ll figure out the best path forward together.",
+  },
+  {
+    role: "assistant",
+    text: "Based on what you’ve shared, there are still approved recovery options available. I’ll explain each step clearly so you know exactly what to expect.",
+  },
+  {
+    role: "assistant",
+    text: "I can’t help with bypassing device security or accessing data without authorization, but I can guide you through every approved recovery option available to you.",
+  },
+  {
+    role: "assistant",
+    text: "Whenever you’re ready, we can move forward together.",
   },
 ];
 
@@ -34,7 +46,7 @@ export default function ConciergeChat() {
               }`}
             >
               <div
-                className={`max-w-md rounded-2xl px-4 py-3 text-sm ${
+                className={`max-w-md whitespace-pre-line rounded-2xl px-4 py-3 text-sm ${
                   message.role === "user"
                     ? "bg-ocean text-white"
                     : "bg-sky text-slate"

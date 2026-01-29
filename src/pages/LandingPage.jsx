@@ -8,61 +8,78 @@ export default function LandingPage() {
           SafeRestore Concierge
         </p>
         <h1 className="mt-4 text-4xl font-semibold leading-tight text-slate">
-          Calm, consent-based guidance for recovering the data that matters.
+          Recover what you thought was gone.
         </h1>
         <p className="mt-4 max-w-2xl text-base text-calm">
-          SafeRestore is an AI-powered recovery concierge for personal devices.
-          We guide you through official recovery steps, clarify next actions,
-          and keep everything transparent. No bypasses. No guesswork.
+          SafeRestore is an AI-powered data recovery concierge that guides you
+          through the safest, official ways to recover photos, messages, and
+          files from your iPhone.
         </p>
         <div className="mt-6 flex flex-wrap gap-4">
           <Link
             to="/recovery"
             className="rounded-full bg-ocean px-6 py-3 text-sm font-semibold text-white shadow-sm"
           >
-            Start a recovery plan
+            Start Recovery
           </Link>
           <Link
             to="/concierge"
             className="rounded-full border border-sky px-6 py-3 text-sm font-semibold text-slate"
           >
-            Talk to the concierge
+            Talk to the Concierge
           </Link>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="flex flex-wrap gap-3">
         {[
-          {
-            title: "Official recovery steps",
-            description:
-              "We only recommend Apple-approved recovery paths so you always stay within policy.",
-          },
-          {
-            title: "Owner-first verification",
-            description:
-              "Every workflow starts with consent and ownership clarity. Your data stays in your control.",
-          },
-          {
-            title: "Clear, steady guidance",
-            description:
-              "Calm instructions, progress tracking, and helpful context when the situation is stressful.",
-          },
+          "Privacy-first",
+          "Read-only guidance",
+          "Official recovery paths",
+          "You stay in control",
         ].map((item) => (
-          <div key={item.title} className="rounded-2xl bg-white p-6 shadow-sm">
-            <h3 className="text-base font-semibold text-slate">{item.title}</h3>
-            <p className="mt-2 text-sm text-calm">{item.description}</p>
-          </div>
+          <span
+            key={item}
+            className="rounded-full border border-sky bg-white px-4 py-2 text-xs font-semibold text-calm"
+          >
+            {item}
+          </span>
         ))}
       </div>
 
-      <div className="rounded-2xl border border-sky bg-white p-8">
-        <h2 className="text-lg font-semibold text-slate">What we never do</h2>
-        <p className="mt-2 text-sm text-calm">
-          SafeRestore does not bypass passcodes, encryption, or device security.
-          If a device cannot be unlocked by the owner, we direct you to official
-          recovery and authorized repair options.
-        </p>
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold text-slate">How it Works</h2>
+        <div className="grid gap-6 md:grid-cols-3">
+          {[
+            {
+              title: "Tell us what happened",
+              description:
+                "Whether your phone was damaged, data went missing after an upgrade, or files were deleted by mistake, we’ll understand your situation first.",
+            },
+            {
+              title: "Get a clear recovery plan",
+              description:
+                "Our AI concierge determines the safest official recovery path based on your device, iOS version, and what access you still have.",
+            },
+            {
+              title: "Follow guided steps",
+              description:
+                "No guessing and no panic. Just calm, step-by-step guidance using approved Apple recovery tools and processes.",
+            },
+          ].map((item) => (
+            <div key={item.title} className="rounded-2xl bg-white p-6 shadow-sm">
+              <h3 className="text-base font-semibold text-slate">
+                {item.title}
+              </h3>
+              <p className="mt-2 text-sm text-calm">{item.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-sky bg-white p-8 text-sm text-calm">
+        SafeRestore never bypasses device security or accesses data without your
+        consent. We guide you — you authorize every step.
       </div>
     </section>
   );

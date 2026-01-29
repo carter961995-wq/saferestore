@@ -1,27 +1,20 @@
-const steps = [
-  {
-    title: "Confirm ownership and consent",
-    description:
-      "We begin with clear ownership confirmation so every step is authorized and safe.",
-  },
-  {
-    title: "Check Apple ID access",
-    description:
-      "We guide you through official Apple account recovery and access verification.",
-  },
-  {
-    title: "Restore from backup or sync",
-    description:
-      "We help identify what is already synced or backed up and how to restore it.",
-  },
-  {
-    title: "Route to authorized service",
-    description:
-      "If hardware repair is needed, we point you to authorized repair providers.",
-  },
-];
+import { useState } from "react";
 
 export default function RecoveryFlowPage() {
+  const [incident, setIncident] = useState("My iPhone was damaged");
+  const [deviceModel, setDeviceModel] = useState("");
+  const [iosVersion, setIosVersion] = useState("");
+  const [powersOn, setPowersOn] = useState("Yes");
+  const [accessOptions, setAccessOptions] = useState({
+    appleId: false,
+    icloud: false,
+    unsure: false,
+  });
+
+  const toggleAccess = (key) => {
+    setAccessOptions((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
   return (
     <section className="space-y-8">
       <div>
@@ -34,28 +27,120 @@ export default function RecoveryFlowPage() {
         </p>
       </div>
 
-      <div className="space-y-4">
-        {steps.map((step, index) => (
-          <div
-            key={step.title}
-            className="flex gap-4 rounded-2xl bg-white p-6 shadow-sm"
-          >
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sky text-sm font-semibold text-slate">
-              {index + 1}
-            </div>
-            <div>
-              <h2 className="text-base font-semibold text-slate">
-                {step.title}
-              </h2>
-              <p className="mt-1 text-sm text-calm">{step.description}</p>
-            </div>
+      <div className="space-y-6">
+        <div className="rounded-2xl bg-white p-6 shadow-sm">
+          <h2 className="text-base font-semibold text-slate">What happened?</h2>
+          <div className="mt-4 grid gap-3 text-sm text-calm">
+            {[
+              "My iPhone was damaged",
+              "I upgraded and data is missing",
+              "I deleted files by mistake",
+              "Something else",
+            ].map((option) => (
+              <label
+                key={option}
+                className="flex items-center gap-3 rounded-xl border border-sky px-4 py-3"
+              >
+                <input
+                  type="radio"
+                  name="incident"
+                  value={option}
+                  checked={incident === option}
+                  onChange={(event) => setIncident(event.target.value)}
+                />
+                {option}
+              </label>
+            ))}
           </div>
-        ))}
+          <p className="mt-3 text-xs text-calm">
+            This helps us recommend the safest recovery path for your situation.
+          </p>
+        </div>
+
+        <div className="rounded-2xl bg-white p-6 shadow-sm">
+          <h2 className="text-base font-semibold text-slate">Your device</h2>
+          <div className="mt-4 grid gap-4 text-sm text-calm">
+            <label className="grid gap-2">
+              iPhone model
+              <input
+                className="rounded-lg border border-sky px-3 py-2 text-sm text-slate"
+                value={deviceModel}
+                onChange={(event) => setDeviceModel(event.target.value)}
+                placeholder="e.g., iPhone 14 Pro"
+              />
+            </label>
+            <label className="grid gap-2">
+              iOS version (optional)
+              <input
+                className="rounded-lg border border-sky px-3 py-2 text-sm text-slate"
+                value={iosVersion}
+                onChange={(event) => setIosVersion(event.target.value)}
+                placeholder="e.g., iOS 17.3"
+              />
+            </label>
+            <label className="grid gap-2">
+              Does the old device power on? (Yes / No)
+              <select
+                className="rounded-lg border border-sky px-3 py-2 text-sm text-slate"
+                value={powersOn}
+                onChange={(event) => setPowersOn(event.target.value)}
+              >
+                <option>Yes</option>
+                <option>No</option>
+              </select>
+            </label>
+          </div>
+          <p className="mt-3 text-xs text-calm">
+            Device details help us narrow down the most reliable recovery
+            options.
+          </p>
+        </div>
+
+        <div className="rounded-2xl bg-white p-6 shadow-sm">
+          <h2 className="text-base font-semibold text-slate">
+            What access do you still have?
+          </h2>
+          <div className="mt-4 grid gap-3 text-sm text-calm">
+            {[
+              { key: "appleId", label: "I know my Apple ID" },
+              { key: "icloud", label: "I can access iCloud" },
+              { key: "unsure", label: "I’m not sure" },
+            ].map((option) => (
+              <label
+                key={option.key}
+                className="flex items-center gap-3 rounded-xl border border-sky px-4 py-3"
+              >
+                <input
+                  type="checkbox"
+                  checked={accessOptions[option.key]}
+                  onChange={() => toggleAccess(option.key)}
+                />
+                {option.label}
+              </label>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-calm">
+            Don’t worry — we’ll adjust the plan based on what you still have
+            access to.
+          </p>
+        </div>
       </div>
 
-      <div className="rounded-2xl border border-sky bg-white p-6 text-sm text-calm">
-        Need personalized guidance? The concierge can help you choose the right
-        official path based on your device and account status.
+      <div className="rounded-2xl border border-sky bg-white p-6">
+        <h2 className="text-base font-semibold text-slate">Your Recovery Plan</h2>
+        <p className="mt-2 text-sm text-calm">
+          Based on your device and access, the safest recovery path is to use
+          official Apple recovery and restore tools.
+        </p>
+        <p className="mt-3 text-sm text-calm">
+          We’ll guide you step by step so you can move forward with confidence.
+        </p>
+        <button
+          className="mt-4 rounded-full bg-ocean px-5 py-2 text-sm font-semibold text-white"
+          type="button"
+        >
+          Continue with Concierge
+        </button>
       </div>
     </section>
   );

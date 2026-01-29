@@ -29,8 +29,7 @@ export default function Layout({ children }) {
       <main className="mx-auto max-w-5xl px-6 py-10">{children}</main>
       <footer className="border-t border-sky bg-white/80">
         <div className="mx-auto max-w-5xl px-6 py-6 text-xs text-calm">
-          SafeRestore provides consent-based guidance and official recovery
-          resources. We do not bypass device security.
+          Your data. Your control. Official paths only.
         </div>
       </footer>
     </div>
