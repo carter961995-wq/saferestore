@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 const messages = [
   {
     role: "assistant",
@@ -26,19 +28,31 @@ const messages = [
 ];
 
 export default function ConciergeChat() {
+  const [visibleCount, setVisibleCount] = useState(1);
+
+  useEffect(() => {
+    if (visibleCount >= messages.length) return;
+    const timer = setTimeout(() => {
+      setVisibleCount((count) => count + 1);
+    }, 420);
+    return () => clearTimeout(timer);
+  }, [visibleCount]);
+
+  const visibleMessages = messages.slice(0, visibleCount);
+
   return (
-    <section className="space-y-6">
-      <div>
+    <section className="space-y-8">
+      <div className="space-y-2">
         <h1 className="text-3xl font-semibold text-slate">Concierge Chat</h1>
-        <p className="mt-2 text-sm text-calm">
+        <p className="text-sm leading-relaxed text-slate-600">
           A calm, consent-first chat experience. Responses below are placeholders
           until live AI is connected.
         </p>
       </div>
 
-      <div className="rounded-2xl bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="space-y-4">
-          {messages.map((message, index) => (
+          {visibleMessages.map((message, index) => (
             <div
               key={index}
               className={`flex ${
@@ -46,10 +60,10 @@ export default function ConciergeChat() {
               }`}
             >
               <div
-                className={`max-w-md whitespace-pre-line rounded-2xl px-4 py-3 text-sm ${
+                className={`max-w-md whitespace-pre-line rounded-2xl px-4 py-3 text-sm leading-relaxed ${
                   message.role === "user"
-                    ? "bg-ocean text-white"
-                    : "bg-sky text-slate"
+                    ? "bg-ocean text-white shadow-sm"
+                    : "border border-slate-200 bg-slate-50 text-slate-700"
                 }`}
               >
                 {message.text}
@@ -58,12 +72,12 @@ export default function ConciergeChat() {
           ))}
         </div>
 
-        <div className="mt-6 flex items-center gap-3 rounded-full border border-sky px-4 py-2 text-sm text-calm">
+        <div className="mt-6 flex items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-500">
           <span className="flex-1">
             Type your question… (chat input coming soon)
           </span>
           <button
-            className="rounded-full bg-sky px-4 py-2 text-xs font-semibold text-slate"
+            className="rounded-full bg-slate-200 px-4 py-2 text-xs font-semibold text-slate-600"
             type="button"
             disabled
           >

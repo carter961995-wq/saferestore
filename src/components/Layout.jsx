@@ -1,15 +1,15 @@
 import { Link, NavLink } from "react-router-dom";
 
 const navLinkClass = ({ isActive }) =>
-  `text-sm font-medium transition ${
-    isActive ? "text-ocean" : "text-calm hover:text-ocean"
+  `text-sm font-medium transition-colors ${
+    isActive ? "text-ocean" : "text-slate-600 hover:text-ocean"
   }`;
 
 export default function Layout({ children }) {
   return (
     <div className="min-h-screen bg-mist text-slate">
-      <header className="border-b border-sky bg-white/80 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+      <header className="border-b border-sky bg-white/90 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
           <Link to="/" className="text-lg font-semibold text-slate">
             SafeRestore Concierge
           </Link>
@@ -26,9 +26,9 @@ export default function Layout({ children }) {
           </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-5xl px-6 py-10">{children}</main>
+      <main className="mx-auto max-w-4xl px-6 py-12">{children}</main>
       <footer className="border-t border-sky bg-white/80">
-        <div className="mx-auto max-w-5xl px-6 py-6 text-xs text-calm">
+        <div className="mx-auto max-w-4xl px-6 py-6 text-xs text-slate-500">
           Your data. Your control. Official paths only.
         </div>
       </footer>
