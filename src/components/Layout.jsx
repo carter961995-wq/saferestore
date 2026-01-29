@@ -48,6 +48,14 @@ export default function Layout({ children }) {
             <Link to="/privacy" className="font-semibold text-slate-500 underline">
               Privacy Policy
             </Link>
+            <span className="px-2 text-slate-400">•</span>
+            <Link to="/terms" className="font-semibold text-slate-500 underline">
+              Terms
+            </Link>
+            <span className="px-2 text-slate-400">•</span>
+            <Link to="/support" className="font-semibold text-slate-500 underline">
+              Support
+            </Link>
           </div>
         </div>
       </footer>

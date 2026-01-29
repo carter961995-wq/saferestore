@@ -10,6 +10,8 @@ import CaseSummary from "./pages/CaseSummary.jsx";
 import EventsPage from "./pages/EventsPage.jsx";
 import { logEvent } from "./lib/analytics.js";
 import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
+import TermsOfService from "./pages/TermsOfService.jsx";
+import Support from "./pages/Support.jsx";
 import NotFound from "./pages/NotFound.jsx";
 
 export default function App() {
@@ -29,6 +31,8 @@ export default function App() {
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/case-summary" element={<CaseSummary />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/terms" element={<TermsOfService />} />
+        <Route path="/support" element={<Support />} />
         {import.meta.env.DEV ? (
           <Route path="/events" element={<EventsPage />} />
         ) : null}
