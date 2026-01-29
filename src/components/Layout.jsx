@@ -34,6 +34,9 @@ export default function Layout({ children }) {
             <NavLink to="/case-summary" className={navLinkClass}>
               Case Summary
             </NavLink>
+            <NavLink to="/privacy" className={navLinkClass}>
+              Privacy
+            </NavLink>
           </nav>
         </div>
       </header>
