@@ -8,13 +8,6 @@ const initialMessages = [
   },
 ];
 
-const assistantReplies = [
-  "You’re not alone in this — we’ll figure out the best path forward together.",
-  "Based on what you’ve shared, there are still approved recovery options available. I’ll explain each step clearly so you know exactly what to expect.",
-  "I can’t help with bypassing device security or accessing data without authorization, but I can guide you through every approved recovery option available to you.",
-  "Whenever you’re ready, we can move forward together.",
-];
-
 export default function ConciergeChat() {
   const [input, setInput] = useState("");
   const [chatMessages, setChatMessages] = useState(initialMessages);

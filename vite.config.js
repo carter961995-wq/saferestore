@@ -3,6 +3,13 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
+  esbuild: {
+    tsconfigRaw: {
+      compilerOptions: {
+        jsx: "automatic",
+      },
+    },
+  },
   server: {
     proxy: {
       "/api": "http://localhost:5050",
