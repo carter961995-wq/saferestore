@@ -26,6 +26,12 @@ export default function Layout({ children }) {
             <NavLink to="/trust" className={navLinkClass}>
               Trust Center
             </NavLink>
+            <NavLink to="/pricing" className={navLinkClass}>
+              Pricing
+            </NavLink>
+            <NavLink to="/case-summary" className={navLinkClass}>
+              Case Summary
+            </NavLink>
           </nav>
         </div>
       </header>
