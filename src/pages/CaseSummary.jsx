@@ -8,6 +8,7 @@ export default function CaseSummary() {
   const [powersOn, setPowersOn] = useState("");
   const [accessStatus, setAccessStatus] = useState("");
   const [notes, setNotes] = useState("");
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("saferestore_caseData");
@@ -28,11 +29,11 @@ export default function CaseSummary() {
     "SafeRestore — Case Summary",
     "",
     "Your Details",
-    `What happened?: ${whatHappened || "-"}`,
-    `iPhone model: ${iphoneModel || "-"}`,
-    `iOS version (optional): ${iosVersion || "-"}`,
-    `Does the old device power on?: ${powersOn || "-"}`,
-    `Apple ID / iCloud access status: ${accessStatus || "-"}`,
+    `• What happened?: ${whatHappened || "-"}`,
+    `• iPhone model: ${iphoneModel || "-"}`,
+    `• iOS version (optional): ${iosVersion || "-"}`,
+    `• Does the old device power on?: ${powersOn || "-"}`,
+    `• Apple ID / iCloud access status: ${accessStatus || "-"}`,
     "",
     "Recommended Official Path",
     "Based on your details, SafeRestore recommends using official Apple recovery and restore tools as the safest next step.",
@@ -44,6 +45,8 @@ export default function CaseSummary() {
   const handleCopy = async () => {
     if (!navigator?.clipboard?.writeText) return;
     await navigator.clipboard.writeText(summaryText);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1600);
   };
 
   const handleClear = () => {
@@ -134,13 +137,20 @@ export default function CaseSummary() {
       </div>
 
       <div className="flex flex-wrap gap-4">
-        <button
-          className="rounded-full bg-ocean px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
-          type="button"
-          onClick={handleCopy}
-        >
-          Copy Summary
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            className="rounded-full bg-ocean px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+            type="button"
+            onClick={handleCopy}
+          >
+            Copy Summary
+          </button>
+          {copied ? (
+            <span className="text-sm font-semibold text-slate-500">
+              Copied
+            </span>
+          ) : null}
+        </div>
         <Link
           to="/recovery"
           className="rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-slate transition hover:border-slate-300"
