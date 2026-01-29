@@ -28,7 +28,7 @@ app.post("/api/chat", async (req, res) => {
     return res.status(500).json({ error: "Server not configured." });
   }
 
-  const { messages } = req.body || {};
+  const { messages, caseDataSummary } = req.body || {};
   if (!Array.isArray(messages)) {
     return res.status(400).json({ error: "Invalid message format." });
   }
@@ -45,9 +45,17 @@ app.post("/api/chat", async (req, res) => {
   const client = new OpenAI({ apiKey });
 
   try {
+    const contextMessage = caseDataSummary
+      ? { role: "system", content: String(caseDataSummary) }
+      : null;
+
     const completion = await client.chat.completions.create({
       model: "gpt-4o-mini",
-      messages: [{ role: "system", content: systemPrompt }, ...safeMessages],
+      messages: [
+        { role: "system", content: systemPrompt },
+        ...(contextMessage ? [contextMessage] : []),
+        ...safeMessages,
+      ],
       temperature: 0.2,
     });
 

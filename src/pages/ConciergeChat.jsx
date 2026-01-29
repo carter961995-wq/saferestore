@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const initialMessages = [
   {
@@ -19,6 +19,25 @@ export default function ConciergeChat() {
   const [chatMessages, setChatMessages] = useState(initialMessages);
   const [isThinking, setIsThinking] = useState(false);
   const [error, setError] = useState(false);
+  const [caseDataSummary, setCaseDataSummary] = useState("");
+
+  useEffect(() => {
+    const stored = localStorage.getItem("saferestore_caseData");
+    if (!stored) return;
+    try {
+      const parsed = JSON.parse(stored);
+      const summaryLines = [
+        `What happened: ${parsed.incident || "-"}`,
+        `iPhone model: ${parsed.deviceModel || "-"}`,
+        `iOS version: ${parsed.iosVersion || "-"}`,
+        `Does it power on: ${parsed.powersOn || "-"}`,
+        `Apple ID / iCloud access status: ${parsed.accessStatus || "-"}`,
+      ];
+      setCaseDataSummary(summaryLines.join("\n"));
+    } catch {
+      // ignore invalid stored data
+    }
+  }, []);
 
   const sendRequest = async (payload) => {
     setIsThinking(true);
@@ -60,6 +79,9 @@ export default function ConciergeChat() {
           content: message.text,
         })),
     };
+    if (caseDataSummary) {
+      payload.caseDataSummary = caseDataSummary;
+    }
 
     sendRequest(payload);
   };
