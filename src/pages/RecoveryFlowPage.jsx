@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function RecoveryFlowPage() {
+  const navigate = useNavigate();
   const [incident, setIncident] = useState("My iPhone was damaged");
   const [deviceModel, setDeviceModel] = useState("");
   const [iosVersion, setIosVersion] = useState("");
@@ -13,6 +15,37 @@ export default function RecoveryFlowPage() {
 
   const toggleAccess = (key) => {
     setAccessOptions((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const accessStatus = [
+    accessOptions.appleId ? "I know my Apple ID" : null,
+    accessOptions.icloud ? "I can access iCloud" : null,
+    accessOptions.unsure ? "I’m not sure" : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  useEffect(() => {
+    const caseData = {
+      incident,
+      deviceModel,
+      iosVersion,
+      powersOn,
+      accessStatus,
+    };
+    localStorage.setItem("saferestore_caseData", JSON.stringify(caseData));
+  }, [incident, deviceModel, iosVersion, powersOn, accessStatus]);
+
+  const handleCaseSummary = () => {
+    const caseData = {
+      incident,
+      deviceModel,
+      iosVersion,
+      powersOn,
+      accessStatus,
+    };
+    localStorage.setItem("saferestore_caseData", JSON.stringify(caseData));
+    navigate("/case-summary");
   };
 
   return (
@@ -148,12 +181,21 @@ export default function RecoveryFlowPage() {
         <p className="mt-3 text-sm leading-relaxed text-slate-600">
           We’ll guide you step by step so you can move forward with confidence.
         </p>
-        <button
-          className="mt-4 rounded-full bg-ocean px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
-          type="button"
-        >
-          Continue with Concierge
-        </button>
+        <div className="mt-4 flex flex-wrap gap-3">
+          <button
+            className="rounded-full bg-ocean px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+            type="button"
+          >
+            Continue with Concierge
+          </button>
+          <button
+            className="rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-slate transition hover:border-slate-300"
+            type="button"
+            onClick={handleCaseSummary}
+          >
+            View Case Summary
+          </button>
+        </div>
       </div>
     </section>
   );

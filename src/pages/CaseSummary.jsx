@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 export default function CaseSummary() {
@@ -9,14 +9,29 @@ export default function CaseSummary() {
   const [accessStatus, setAccessStatus] = useState("");
   const [notes, setNotes] = useState("");
 
+  useEffect(() => {
+    const stored = localStorage.getItem("saferestore_caseData");
+    if (!stored) return;
+    try {
+      const parsed = JSON.parse(stored);
+      setWhatHappened(parsed.incident || "");
+      setIphoneModel(parsed.deviceModel || "");
+      setIosVersion(parsed.iosVersion || "");
+      setPowersOn(parsed.powersOn || "");
+      setAccessStatus(parsed.accessStatus || "");
+    } catch {
+      // ignore invalid stored data
+    }
+  }, []);
+
   const summaryText = [
-    "Case Summary",
+    "SafeRestore — Case Summary",
     "",
     "Your Details",
-    `What happened? ${whatHappened || "-"}`,
+    `What happened?: ${whatHappened || "-"}`,
     `iPhone model: ${iphoneModel || "-"}`,
     `iOS version (optional): ${iosVersion || "-"}`,
-    `Does the old device power on? ${powersOn || "-"}`,
+    `Does the old device power on?: ${powersOn || "-"}`,
     `Apple ID / iCloud access status: ${accessStatus || "-"}`,
     "",
     "Recommended Official Path",
@@ -29,6 +44,16 @@ export default function CaseSummary() {
   const handleCopy = async () => {
     if (!navigator?.clipboard?.writeText) return;
     await navigator.clipboard.writeText(summaryText);
+  };
+
+  const handleClear = () => {
+    localStorage.removeItem("saferestore_caseData");
+    setWhatHappened("");
+    setIphoneModel("");
+    setIosVersion("");
+    setPowersOn("");
+    setAccessStatus("");
+    setNotes("");
   };
 
   return (
@@ -122,6 +147,13 @@ export default function CaseSummary() {
         >
           Back to Recovery
         </Link>
+        <button
+          className="text-sm font-semibold text-slate-500 underline transition hover:text-slate-700"
+          type="button"
+          onClick={handleClear}
+        >
+          Clear Case
+        </button>
       </div>
     </section>
   );
