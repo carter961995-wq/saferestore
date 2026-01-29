@@ -1,6 +1,11 @@
 import { Link } from "react-router-dom";
 
 export default function LandingPage() {
+  const primaryButton =
+    "rounded-full bg-ocean px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean/40";
+  const secondaryButton =
+    "rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-slate transition hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300";
+
   return (
     <section className="space-y-10">
       <div className="rounded-3xl bg-white px-8 py-12 text-center shadow-sm">
@@ -16,16 +21,10 @@ export default function LandingPage() {
           files from your iPhone.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-4">
-          <Link
-            to="/recovery"
-            className="rounded-full bg-ocean px-6 py-3 text-base font-semibold text-white shadow-sm transition hover:opacity-90"
-          >
+          <Link to="/recovery" className={`${primaryButton} shadow-sm`}>
             Start Recovery
           </Link>
-          <Link
-            to="/concierge"
-            className="rounded-full border border-slate-200 px-6 py-3 text-base font-semibold text-slate transition hover:border-slate-300"
-          >
+          <Link to="/concierge" className={secondaryButton}>
             Talk to the Concierge
           </Link>
         </div>

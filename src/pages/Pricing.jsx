@@ -34,6 +34,9 @@ const plans = [
 ];
 
 export default function Pricing() {
+  const primaryButton =
+    "rounded-full bg-ocean px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean/40";
+
   return (
     <section className="space-y-8">
       <div className="space-y-3">
@@ -63,7 +66,7 @@ export default function Pricing() {
             </ul>
             <Link
               to="/recovery"
-              className="mt-6 inline-flex items-center justify-center rounded-full bg-ocean px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+              className={`mt-6 inline-flex items-center justify-center ${primaryButton}`}
             >
               {plan.button}
             </Link>

@@ -170,7 +170,7 @@ export default function ConciergeChat() {
             }}
           />
           <button
-            className="rounded-full bg-slate-200 px-4 py-2 text-xs font-semibold text-slate-600"
+            className="rounded-full bg-slate-200 px-4 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300"
             type="button"
             onClick={handleSend}
             disabled={isThinking}

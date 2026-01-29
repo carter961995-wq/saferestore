@@ -9,6 +9,17 @@ export default function CaseSummary() {
   const [accessStatus, setAccessStatus] = useState("");
   const [notes, setNotes] = useState("");
   const [copied, setCopied] = useState(false);
+  const [showValidation, setShowValidation] = useState(false);
+
+  const inputBase =
+    "rounded-lg border bg-slate-50 px-3 py-2 text-sm text-slate focus:border-ocean focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean/30";
+  const primaryButton =
+    "rounded-full bg-ocean px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean/40";
+  const secondaryButton =
+    "rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-slate transition hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300";
+
+  const isWhatHappenedValid = whatHappened.trim().length > 0;
+  const isIphoneModelValid = iphoneModel.trim().length > 0;
 
   useEffect(() => {
     const stored = localStorage.getItem("saferestore_caseData");
@@ -43,6 +54,10 @@ export default function CaseSummary() {
   ].join("\n");
 
   const handleCopy = async () => {
+    if (!isWhatHappenedValid || !isIphoneModelValid) {
+      setShowValidation(true);
+      return;
+    }
     if (!navigator?.clipboard?.writeText) return;
     await navigator.clipboard.writeText(summaryText);
     setCopied(true);
@@ -75,23 +90,37 @@ export default function CaseSummary() {
           <label className="grid gap-2">
             What happened?
             <input
-              className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate focus:border-ocean focus:outline-none"
+              className={`${inputBase} ${
+                showValidation && !isWhatHappenedValid
+                  ? "border-red-300"
+                  : "border-slate-200"
+              }`}
               value={whatHappened}
               onChange={(event) => setWhatHappened(event.target.value)}
             />
+            {showValidation && !isWhatHappenedValid ? (
+              <span className="text-xs text-red-500">Required</span>
+            ) : null}
           </label>
           <label className="grid gap-2">
             iPhone model
             <input
-              className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate focus:border-ocean focus:outline-none"
+              className={`${inputBase} ${
+                showValidation && !isIphoneModelValid
+                  ? "border-red-300"
+                  : "border-slate-200"
+              }`}
               value={iphoneModel}
               onChange={(event) => setIphoneModel(event.target.value)}
             />
+            {showValidation && !isIphoneModelValid ? (
+              <span className="text-xs text-red-500">Required</span>
+            ) : null}
           </label>
           <label className="grid gap-2">
             iOS version (optional)
             <input
-              className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate focus:border-ocean focus:outline-none"
+              className={`${inputBase} border-slate-200`}
               value={iosVersion}
               onChange={(event) => setIosVersion(event.target.value)}
             />
@@ -99,7 +128,7 @@ export default function CaseSummary() {
           <label className="grid gap-2">
             Does the old device power on?
             <input
-              className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate focus:border-ocean focus:outline-none"
+              className={`${inputBase} border-slate-200`}
               value={powersOn}
               onChange={(event) => setPowersOn(event.target.value)}
               placeholder="Yes / No"
@@ -108,7 +137,7 @@ export default function CaseSummary() {
           <label className="grid gap-2">
             Apple ID / iCloud access status
             <input
-              className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate focus:border-ocean focus:outline-none"
+              className={`${inputBase} border-slate-200`}
               value={accessStatus}
               onChange={(event) => setAccessStatus(event.target.value)}
             />
@@ -144,7 +173,7 @@ export default function CaseSummary() {
       <div className="flex flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <button
-            className="rounded-full bg-ocean px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+            className={primaryButton}
             type="button"
             onClick={handleCopy}
           >
@@ -158,7 +187,7 @@ export default function CaseSummary() {
         </div>
         <Link
           to="/recovery"
-          className="rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-slate transition hover:border-slate-300"
+          className={secondaryButton}
         >
           Back to Recovery
         </Link>

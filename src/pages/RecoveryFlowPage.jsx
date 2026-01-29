@@ -12,10 +12,20 @@ export default function RecoveryFlowPage() {
     icloud: false,
     unsure: false,
   });
+  const [showValidation, setShowValidation] = useState(false);
 
   const toggleAccess = (key) => {
     setAccessOptions((prev) => ({ ...prev, [key]: !prev[key] }));
   };
+
+  const inputBase =
+    "rounded-lg border bg-slate-50 px-3 py-2 text-sm text-slate focus:border-ocean focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean/30";
+  const primaryButton =
+    "rounded-full bg-ocean px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean/40";
+  const secondaryButton =
+    "rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-slate transition hover:border-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300";
+
+  const isDeviceModelValid = deviceModel.trim().length > 0;
 
   const accessStatus = [
     accessOptions.appleId ? "I know my Apple ID" : null,
@@ -36,7 +46,19 @@ export default function RecoveryFlowPage() {
     localStorage.setItem("saferestore_caseData", JSON.stringify(caseData));
   }, [incident, deviceModel, iosVersion, powersOn, accessStatus]);
 
+  const validateRequired = () => {
+    if (isDeviceModelValid) return true;
+    setShowValidation(true);
+    return false;
+  };
+
+  const handleContinueConcierge = () => {
+    if (!validateRequired()) return;
+    navigate("/concierge");
+  };
+
   const handleCaseSummary = () => {
+    if (!validateRequired()) return;
     const caseData = {
       incident,
       deviceModel,
@@ -109,16 +131,23 @@ export default function RecoveryFlowPage() {
             <label className="grid gap-2">
               iPhone model
               <input
-                className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate focus:border-ocean focus:outline-none"
+                className={`${inputBase} ${
+                  showValidation && !isDeviceModelValid
+                    ? "border-red-300"
+                    : "border-slate-200"
+                }`}
                 value={deviceModel}
                 onChange={(event) => setDeviceModel(event.target.value)}
                 placeholder="e.g., iPhone 14 Pro"
               />
+              {showValidation && !isDeviceModelValid ? (
+                <span className="text-xs text-red-500">Required</span>
+              ) : null}
             </label>
             <label className="grid gap-2">
               iOS version (optional)
               <input
-                className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate focus:border-ocean focus:outline-none"
+                className={`${inputBase} border-slate-200`}
                 value={iosVersion}
                 onChange={(event) => setIosVersion(event.target.value)}
                 placeholder="e.g., iOS 17.3"
@@ -127,7 +156,7 @@ export default function RecoveryFlowPage() {
             <label className="grid gap-2">
               Does the old device power on? (Yes / No)
               <select
-                className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate focus:border-ocean focus:outline-none"
+                className={`${inputBase} border-slate-200`}
                 value={powersOn}
                 onChange={(event) => setPowersOn(event.target.value)}
               >
@@ -188,14 +217,14 @@ export default function RecoveryFlowPage() {
         </div>
         <div className="mt-4 flex flex-wrap gap-3">
           <button
-            className="rounded-full bg-ocean px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
+            className={primaryButton}
             type="button"
-            onClick={() => navigate("/concierge")}
+            onClick={handleContinueConcierge}
           >
             Continue with Concierge
           </button>
           <button
-            className="rounded-full border border-slate-200 px-5 py-2 text-sm font-semibold text-slate transition hover:border-slate-300"
+            className={secondaryButton}
             type="button"
             onClick={handleCaseSummary}
           >
