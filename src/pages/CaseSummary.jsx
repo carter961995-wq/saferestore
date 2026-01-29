@@ -59,8 +59,27 @@ export default function CaseSummary() {
       setShowValidation(true);
       return;
     }
-    if (!navigator?.clipboard?.writeText) return;
-    await navigator.clipboard.writeText(summaryText);
+    let copiedOk = false;
+    if (navigator?.clipboard?.writeText) {
+      try {
+        await navigator.clipboard.writeText(summaryText);
+        copiedOk = true;
+      } catch {
+        copiedOk = false;
+      }
+    }
+    if (!copiedOk) {
+      const textarea = document.createElement("textarea");
+      textarea.value = summaryText;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "absolute";
+      textarea.style.left = "-9999px";
+      document.body.appendChild(textarea);
+      textarea.select();
+      copiedOk = document.execCommand("copy");
+      document.body.removeChild(textarea);
+    }
+    if (!copiedOk) return;
     logEvent("case_summary_copied");
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1600);
