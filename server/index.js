@@ -15,8 +15,15 @@ app.use(
     max: 30,
     standardHeaders: true,
     legacyHeaders: false,
+    handler: (_req, res) => {
+      res.status(429).json({ error: "Too many requests." });
+    },
   })
 );
+
+const sendError = (res, status, message) => {
+  res.status(status).json({ error: message });
+};
 
 const systemPrompt = `You are the SafeRestore concierge. Provide calm, reassuring, plain-English guidance.
 Only recommend official Apple recovery paths. Never bypass device security, passcodes, or encryption.
@@ -25,12 +32,12 @@ Never suggest unauthorized access. Focus on clear, step-by-step guidance.`;
 app.post("/api/chat", async (req, res) => {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: "Server not configured." });
+    return sendError(res, 500, "Server not configured.");
   }
 
   const { messages, caseDataSummary } = req.body || {};
   if (!Array.isArray(messages)) {
-    return res.status(400).json({ error: "Invalid message format." });
+    return sendError(res, 400, "Invalid message format.");
   }
 
   const safeMessages = messages
@@ -41,6 +48,10 @@ app.post("/api/chat", async (req, res) => {
       content: String(message.content || ""),
     }))
     .filter((message) => message.content.trim().length > 0);
+
+  if (safeMessages.length === 0) {
+    return sendError(res, 400, "No messages provided.");
+  }
 
   const client = new OpenAI({ apiKey });
 
@@ -61,12 +72,12 @@ app.post("/api/chat", async (req, res) => {
 
     const reply = completion.choices?.[0]?.message?.content?.trim();
     if (!reply) {
-      return res.status(502).json({ error: "No response from model." });
+      return sendError(res, 502, "No response from model.");
     }
 
     return res.json({ message: reply });
   } catch (error) {
-    return res.status(502).json({ error: "Upstream AI error." });
+    return sendError(res, 502, "Upstream AI error.");
   }
 });
 

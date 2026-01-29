@@ -20,6 +20,7 @@ export default function ConciergeChat() {
   const [isThinking, setIsThinking] = useState(false);
   const [error, setError] = useState(false);
   const [caseDataSummary, setCaseDataSummary] = useState("");
+  const [lastPayload, setLastPayload] = useState(null);
 
   useEffect(() => {
     const stored = localStorage.getItem("saferestore_caseData");
@@ -43,11 +44,15 @@ export default function ConciergeChat() {
     setIsThinking(true);
     setError(false);
     try {
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), 25000);
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
+        signal: controller.signal,
       });
+      window.clearTimeout(timeoutId);
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data?.error || "Request failed");
@@ -83,7 +88,13 @@ export default function ConciergeChat() {
       payload.caseDataSummary = caseDataSummary;
     }
 
+    setLastPayload(payload);
     sendRequest(payload);
+  };
+
+  const handleRetry = () => {
+    if (!lastPayload) return;
+    sendRequest(lastPayload);
   };
 
   return (
@@ -127,6 +138,17 @@ export default function ConciergeChat() {
               </div>
             </div>
           ) : null}
+          {error ? (
+            <div className="flex justify-start">
+              <button
+                className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm text-slate-600"
+                type="button"
+                onClick={handleRetry}
+              >
+                Error. Tap to retry.
+              </button>
+            </div>
+          ) : null}
         </div>
 
         <div className="mt-6 flex items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-500">
@@ -145,6 +167,7 @@ export default function ConciergeChat() {
             className="rounded-full bg-slate-200 px-4 py-2 text-xs font-semibold text-slate-600"
             type="button"
             onClick={handleSend}
+            disabled={isThinking}
           >
             Send
           </button>
