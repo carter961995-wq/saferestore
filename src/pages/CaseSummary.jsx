@@ -124,6 +124,11 @@ export default function CaseSummary() {
           Based on your details, SafeRestore recommends using official Apple
           recovery and restore tools as the safest next step.
         </p>
+        <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
+          Important: SafeRestore provides guidance based on official Apple
+          recovery options. We can’t guarantee data recovery results, and we
+          never bypass device security.
+        </div>
       </div>
 
       <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">

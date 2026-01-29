@@ -151,7 +151,13 @@ export default function ConciergeChat() {
           ) : null}
         </div>
 
-        <div className="mt-6 flex items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-500">
+        <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
+          Important: SafeRestore provides guidance based on official Apple
+          recovery options. We can’t guarantee data recovery results, and we
+          never bypass device security.
+        </div>
+
+        <div className="mt-4 flex items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-500">
           <input
             className="flex-1 bg-transparent text-sm text-slate-600 placeholder:text-slate-400 focus:outline-none"
             placeholder="Type your question… (chat input coming soon)"

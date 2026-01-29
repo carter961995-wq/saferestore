@@ -181,6 +181,11 @@ export default function RecoveryFlowPage() {
         <p className="mt-3 text-sm leading-relaxed text-slate-600">
           We’ll guide you step by step so you can move forward with confidence.
         </p>
+        <div className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-500">
+          Important: SafeRestore provides guidance based on official Apple
+          recovery options. We can’t guarantee data recovery results, and we
+          never bypass device security.
+        </div>
         <div className="mt-4 flex flex-wrap gap-3">
           <button
             className="rounded-full bg-ocean px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90"
