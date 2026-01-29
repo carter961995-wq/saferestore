@@ -7,6 +7,21 @@ dotenv.config();
 
 const app = express();
 
+const devOrigin =
+  process.env.NODE_ENV === "development" ? "http://localhost:5173" : null;
+
+app.use((req, res, next) => {
+  if (devOrigin && req.headers.origin === devOrigin) {
+    res.setHeader("Access-Control-Allow-Origin", devOrigin);
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  }
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+  next();
+});
+
 app.use(express.json({ limit: "10kb" }));
 
 app.use(
@@ -28,6 +43,10 @@ const sendError = (res, status, message) => {
 const systemPrompt = `You are the SafeRestore concierge. Provide calm, reassuring, plain-English guidance.
 Only recommend official Apple recovery paths. Never bypass device security, passcodes, or encryption.
 Never suggest unauthorized access. Focus on clear, step-by-step guidance.`;
+
+app.get("/health", (_req, res) => {
+  res.json({ status: "ok" });
+});
 
 app.post("/api/chat", async (req, res) => {
   const apiKey = process.env.OPENAI_API_KEY;
@@ -79,6 +98,10 @@ app.post("/api/chat", async (req, res) => {
   } catch (error) {
     return sendError(res, 502, "Upstream AI error.");
   }
+});
+
+app.use("/api", (_req, res) => {
+  return sendError(res, 404, "Not found.");
 });
 
 const port = process.env.PORT || 5050;
