@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const messages = [
+const initialMessages = [
   {
     role: "assistant",
     text: "Hi — I’m your SafeRestore concierge.\n\nI’m here to help you recover your data using the safest official options available. We’ll take this one step at a time.",
@@ -27,18 +27,45 @@ const messages = [
   },
 ];
 
+const assistantReplies = [
+  "You’re not alone in this — we’ll figure out the best path forward together.",
+  "Based on what you’ve shared, there are still approved recovery options available. I’ll explain each step clearly so you know exactly what to expect.",
+  "I can’t help with bypassing device security or accessing data without authorization, but I can guide you through every approved recovery option available to you.",
+  "Whenever you’re ready, we can move forward together.",
+];
+
 export default function ConciergeChat() {
   const [visibleCount, setVisibleCount] = useState(1);
+  const [input, setInput] = useState("");
+  const [replyIndex, setReplyIndex] = useState(0);
+  const [chatMessages, setChatMessages] = useState(initialMessages);
 
   useEffect(() => {
-    if (visibleCount >= messages.length) return;
+    if (visibleCount >= initialMessages.length) return;
     const timer = setTimeout(() => {
       setVisibleCount((count) => count + 1);
     }, 420);
     return () => clearTimeout(timer);
   }, [visibleCount]);
 
-  const visibleMessages = messages.slice(0, visibleCount);
+  const visibleMessages = chatMessages.slice(0, visibleCount);
+
+  const handleSend = () => {
+    const trimmed = input.trim();
+    if (!trimmed) return;
+    const nextMessages = [...chatMessages, { role: "user", text: trimmed }];
+    setChatMessages(nextMessages);
+    setInput("");
+    setVisibleCount(nextMessages.length);
+
+    const reply = assistantReplies[replyIndex % assistantReplies.length];
+    setReplyIndex((index) => index + 1);
+
+    window.setTimeout(() => {
+      setChatMessages((prev) => [...prev, { role: "assistant", text: reply }]);
+      setVisibleCount((count) => count + 1);
+    }, 500);
+  };
 
   return (
     <section className="space-y-8">
@@ -73,13 +100,21 @@ export default function ConciergeChat() {
         </div>
 
         <div className="mt-6 flex items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-500">
-          <span className="flex-1">
-            Type your question… (chat input coming soon)
-          </span>
+          <input
+            className="flex-1 bg-transparent text-sm text-slate-600 placeholder:text-slate-400 focus:outline-none"
+            placeholder="Type your question… (chat input coming soon)"
+            value={input}
+            onChange={(event) => setInput(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                handleSend();
+              }
+            }}
+          />
           <button
             className="rounded-full bg-slate-200 px-4 py-2 text-xs font-semibold text-slate-600"
             type="button"
-            disabled
+            onClick={handleSend}
           >
             Send
           </button>
