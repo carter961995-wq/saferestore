@@ -1,29 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 const initialMessages = [
   {
     role: "assistant",
     text: "Hi — I’m your SafeRestore concierge.\n\nI’m here to help you recover your data using the safest official options available. We’ll take this one step at a time.",
-  },
-  {
-    role: "user",
-    text: "My iPhone was damaged and I’m worried about my photos.",
-  },
-  {
-    role: "assistant",
-    text: "You’re not alone in this — we’ll figure out the best path forward together.",
-  },
-  {
-    role: "assistant",
-    text: "Based on what you’ve shared, there are still approved recovery options available. I’ll explain each step clearly so you know exactly what to expect.",
-  },
-  {
-    role: "assistant",
-    text: "I can’t help with bypassing device security or accessing data without authorization, but I can guide you through every approved recovery option available to you.",
-  },
-  {
-    role: "assistant",
-    text: "Whenever you’re ready, we can move forward together.",
   },
 ];
 
@@ -35,20 +15,34 @@ const assistantReplies = [
 ];
 
 export default function ConciergeChat() {
-  const [visibleCount, setVisibleCount] = useState(1);
   const [input, setInput] = useState("");
-  const [replyIndex, setReplyIndex] = useState(0);
   const [chatMessages, setChatMessages] = useState(initialMessages);
+  const [isThinking, setIsThinking] = useState(false);
+  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    if (visibleCount >= initialMessages.length) return;
-    const timer = setTimeout(() => {
-      setVisibleCount((count) => count + 1);
-    }, 420);
-    return () => clearTimeout(timer);
-  }, [visibleCount]);
-
-  const visibleMessages = chatMessages.slice(0, visibleCount);
+  const sendRequest = async (payload) => {
+    setIsThinking(true);
+    setError(false);
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.error || "Request failed");
+      }
+      setChatMessages((prev) => [
+        ...prev,
+        { role: "assistant", text: data.message },
+      ]);
+    } catch (err) {
+      setError(true);
+    } finally {
+      setIsThinking(false);
+    }
+  };
 
   const handleSend = () => {
     const trimmed = input.trim();
@@ -56,15 +50,18 @@ export default function ConciergeChat() {
     const nextMessages = [...chatMessages, { role: "user", text: trimmed }];
     setChatMessages(nextMessages);
     setInput("");
-    setVisibleCount(nextMessages.length);
 
-    const reply = assistantReplies[replyIndex % assistantReplies.length];
-    setReplyIndex((index) => index + 1);
+    const payload = {
+      messages: nextMessages
+        .filter((message) => ["user", "assistant"].includes(message.role))
+        .slice(-10)
+        .map((message) => ({
+          role: message.role,
+          content: message.text,
+        })),
+    };
 
-    window.setTimeout(() => {
-      setChatMessages((prev) => [...prev, { role: "assistant", text: reply }]);
-      setVisibleCount((count) => count + 1);
-    }, 500);
+    sendRequest(payload);
   };
 
   return (
@@ -79,7 +76,7 @@ export default function ConciergeChat() {
 
       <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
         <div className="space-y-4">
-          {visibleMessages.map((message, index) => (
+          {chatMessages.map((message, index) => (
             <div
               key={index}
               className={`flex ${
@@ -97,6 +94,17 @@ export default function ConciergeChat() {
               </div>
             </div>
           ))}
+          {isThinking ? (
+            <div className="flex justify-start">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                <span className="inline-flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-slate-400" />
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-slate-400 [animation-delay:150ms]" />
+                  <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-slate-400 [animation-delay:300ms]" />
+                </span>
+              </div>
+            </div>
+          ) : null}
         </div>
 
         <div className="mt-6 flex items-center gap-3 rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-500">
