@@ -2,25 +2,25 @@ import express from "express";
 import rateLimit from "express-rate-limit";
 import OpenAI from "openai";
 import dotenv from "dotenv";
+import rateLimit from "express-rate-limit";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+
+// Price IDs (confirmed order: 29 -> 19 -> 9)
+const PRICE_IDS = {
+  quick9: "price_1Sv8FNRzCu2QTLbmn3hNmFxb",
+  guided19: "price_1Sv8HVRzCu2QTLbmXrHqHuA4",
+  concierge29: "price_1Sv8S9RzCu2QTLbm0tWmlXHe",
+};
+
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5173";
 
 dotenv.config();
 
 const app = express();
+app.set("trust proxy", 1);
 
-const devOrigin =
-  process.env.NODE_ENV === "development" ? "http://localhost:5173" : null;
-
-app.use((req, res, next) => {
-  if (devOrigin && req.headers.origin === devOrigin) {
-    res.setHeader("Access-Control-Allow-Origin", devOrigin);
-    res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
-    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-  }
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(204);
-  }
-  next();
-});
 
 app.use(express.json({ limit: "10kb" }));
 
@@ -44,10 +44,7 @@ const systemPrompt = `You are the SafeRestore concierge. Provide calm, reassurin
 Only recommend official Apple recovery paths. Never bypass device security, passcodes, or encryption.
 Never suggest unauthorized access. Focus on clear, step-by-step guidance.`;
 
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok" });
-});
-
+app.use("/api/chat", chatLimiter);
 app.post("/api/chat", async (req, res) => {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -100,11 +97,45 @@ app.post("/api/chat", async (req, res) => {
   }
 });
 
-app.use("/api", (_req, res) => {
-  return sendError(res, 404, "Not found.");
-});
-
 const port = process.env.PORT || 5050;
 app.listen(port, () => {
   console.log(`SafeRestore server listening on ${port}`);
 });
+const chatLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+app.post("/api/checkout", async (req, res) => {
+  try {
+    const { tier } = req.body;
+
+    const price =
+      tier === "quick9"
+        ? PRICE_IDS.quick9
+        : tier === "guided19"
+        ? PRICE_IDS.guided19
+        : tier === "concierge29"
+        ? PRICE_IDS.concierge29
+        : null;
+
+    if (!price) {
+      return res.status(400).json({ error: "Invalid tier" });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      mode: "payment",
+      line_items: [{ price, quantity: 1 }],
+      success_url: `${CLIENT_URL}/chat?paid=1&tier=${tier}`,
+      cancel_url: `${CLIENT_URL}/pricing?canceled=1`,
+      allow_promotion_codes: true,
+    });
+
+    res.json({ url: session.url });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Checkout failed" });
+  }
+});
+
