@@ -8,6 +8,8 @@ import TrustCenter from "./pages/TrustCenter.jsx";
 import Pricing from "./pages/Pricing.jsx";
 import Soc2Page from "./pages/Soc2Page.jsx";
 import ForensicPage from "./pages/ForensicPage.jsx";
+import BlogPage from "./pages/BlogPage.jsx";
+import BlogPostPage from "./pages/BlogPostPage.jsx";
 import CaseSummary from "./pages/CaseSummary.jsx";
 import EventsPage from "./pages/EventsPage.jsx";
 import { logEvent } from "./lib/analytics.js";
@@ -15,6 +17,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
 import TermsOfService from "./pages/TermsOfService.jsx";
 import Support from "./pages/Support.jsx";
 import NotFound from "./pages/NotFound.jsx";
+import { blogPostMap } from "./content/blogPosts.js";
 
 const SITE_ORIGIN = "https://saferestorehelp.com";
 
@@ -48,6 +51,11 @@ const pageSeo = {
     title: "Forensic Suite",
     description:
       "Digital forensics workflow guidance for investigative and legal teams, including E01 imaging, hash verification, and chain-of-custody documentation.",
+  },
+  "/blog": {
+    title: "Blog",
+    description:
+      "SafeRestore blog coverage for forensic workflows, chain-of-custody, and legal-ready recovery operations.",
   },
   "/pricing": {
     title: "Pricing",
@@ -116,8 +124,19 @@ export default function App() {
 
   useEffect(() => {
     const pathname = normalizePath(location.pathname);
+    const slug = pathname.startsWith("/blog/") ? pathname.slice("/blog/".length) : null;
+    const blogPost = slug ? blogPostMap[slug] : null;
+
+    const seo =
+      pageSeo[pathname] ||
+      (blogPost
+        ? {
+            title: blogPost.title,
+            description: blogPost.description,
+          }
+        : null);
+
     const canonicalUrl = `${SITE_ORIGIN}${pathname === "/" ? "" : pathname}`;
-    const seo = pageSeo[pathname];
     const foundPage = Boolean(seo);
     const title = seo?.title || "Page Not Found";
     const description =
@@ -146,6 +165,8 @@ export default function App() {
         <Route path="/trust" element={<TrustCenter />} />
         <Route path="/soc-2" element={<Soc2Page />} />
         <Route path="/forensic" element={<ForensicPage />} />
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/case-summary" element={<CaseSummary />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
@@ -155,9 +176,7 @@ export default function App() {
         <Route path="/trust-center" element={<Navigate to="/trust" replace />} />
         <Route path="/privacy-policy" element={<Navigate to="/privacy" replace />} />
         <Route path="/terms-of-service" element={<Navigate to="/terms" replace />} />
-        {import.meta.env.DEV ? (
-          <Route path="/events" element={<EventsPage />} />
-        ) : null}
+        {import.meta.env.DEV ? <Route path="/events" element={<EventsPage />} /> : null}
         <Route path="*" element={<NotFound />} />
       </Routes>
     </Layout>

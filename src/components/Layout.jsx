@@ -28,6 +28,9 @@ export default function Layout({ children }) {
             <NavLink to="/forensic" className={navLinkClass}>
               Forensic Suite
             </NavLink>
+            <NavLink to="/blog" className={navLinkClass}>
+              Blog
+            </NavLink>
             <NavLink to="/pricing" className={navLinkClass}>
               Pricing
             </NavLink>
@@ -53,6 +56,10 @@ export default function Layout({ children }) {
             <span className="text-slate-400">•</span>
             <Link to="/forensic" className="font-semibold text-slate-500 underline">
               Forensic Suite
+            </Link>
+            <span className="text-slate-400">•</span>
+            <Link to="/blog" className="font-semibold text-slate-500 underline">
+              Blog
             </Link>
           </div>
         </div>
