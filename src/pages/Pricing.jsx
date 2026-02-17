@@ -1,7 +1,10 @@
-import { Link } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { PLAN_LABELS, getCurrentPlan, setCurrentPlan } from "../lib/planAccess.js";
 
 const plans = [
   {
+    id: "starter",
     title: "Starter Recovery",
     price: "$39 one-time",
     description: "Guided recovery for single incidents.",
@@ -11,9 +14,10 @@ const plans = [
       "Basic concierge support",
       "Single case summary export",
     ],
-    button: "Start Starter",
+    button: "Choose Starter",
   },
   {
+    id: "advanced",
     title: "Advanced Recovery",
     price: "$79 one-time",
     description: "For complex or high-priority incidents.",
@@ -23,10 +27,11 @@ const plans = [
       "Advanced scan and workflow guidance",
       "Forensic-friendly evidence packaging",
     ],
-    button: "Start Advanced",
+    button: "Choose Advanced",
     featured: true,
   },
   {
+    id: "pro",
     title: "Pro Subscription",
     price: "$12 / month",
     description: "Ongoing readiness for teams and power users.",
@@ -36,7 +41,7 @@ const plans = [
       "Policy-aware autonomous guidance",
       "Ongoing case tracking and history",
     ],
-    button: "Start Pro",
+    button: "Choose Pro",
   },
 ];
 
@@ -74,8 +79,18 @@ const compareRows = [
 ];
 
 export default function Pricing() {
+  const navigate = useNavigate();
+  const [selectedPlan, setSelectedPlan] = useState(getCurrentPlan());
+  const activePlanLabel = useMemo(() => PLAN_LABELS[selectedPlan], [selectedPlan]);
+
   const primaryButton =
     "rounded-full bg-ocean px-5 py-2 text-sm font-semibold text-white transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ocean/40";
+
+  const handleChoosePlan = (planId) => {
+    setCurrentPlan(planId);
+    setSelectedPlan(planId);
+    navigate("/forensic");
+  };
 
   return (
     <section className="space-y-8">
@@ -85,6 +100,9 @@ export default function Pricing() {
           Choose the plan that matches your recovery complexity. All plans stay
           on official, authorized recovery paths.
         </p>
+        <div className="inline-flex rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+          Active plan: {activePlanLabel}
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
@@ -112,12 +130,13 @@ export default function Pricing() {
                 </li>
               ))}
             </ul>
-            <Link
-              to="/recovery"
+            <button
+              type="button"
+              onClick={() => handleChoosePlan(plan.id)}
               className={`mt-6 inline-flex items-center justify-center ${primaryButton}`}
             >
               {plan.button}
-            </Link>
+            </button>
           </div>
         ))}
       </div>

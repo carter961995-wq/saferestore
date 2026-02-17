@@ -228,6 +228,17 @@ export default function RecoveryFlowPage() {
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 className="text-base font-semibold text-slate">Forensic mode access</h2>
+        <p className="mt-2 text-sm leading-relaxed text-slate-600">
+          Forensic acquisition workflows (E01 export, hash verification, custody logging) are plan-gated.
+          Choose a tier in Pricing to unlock the relevant forensic controls for your case.
+        </p>
+        <div className="mt-3 text-sm">
+          <a href="/pricing" className="font-semibold text-ocean underline">Review forensic plan access</a>
+        </div>
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-6">
         <h2 className="text-base font-semibold text-slate">Your Recovery Plan</h2>
         <p className="mt-2 text-sm leading-relaxed text-slate-600">
           Based on your device and access, the safest recovery path is to use
