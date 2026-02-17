@@ -11,50 +11,55 @@ export default function Layout({ children }) {
   return (
     <div className="min-h-screen bg-mist text-slate">
       <header className="border-b border-sky bg-white/90 backdrop-blur-sm">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-6 py-4">
           <Link to="/" className="text-lg font-semibold text-slate">
             SafeRestore Concierge
           </Link>
-          <nav className="flex items-center gap-6">
-            <NavLink to="/" className={navLinkClass}>
-              Overview
-            </NavLink>
-            <NavLink to="/recovery" className={navLinkClass}>
-              Recovery Flow
-            </NavLink>
-            <NavLink to="/concierge" className={navLinkClass}>
-              Concierge Chat
-            </NavLink>
+          <nav className="flex flex-wrap items-center gap-x-5 gap-y-2">
             <NavLink to="/trust" className={navLinkClass}>
               Trust Center
+            </NavLink>
+            <NavLink to="/terms" className={navLinkClass}>
+              Terms of Service
+            </NavLink>
+            <NavLink to="/privacy" className={navLinkClass}>
+              Privacy Policy
+            </NavLink>
+            <NavLink to="/forensic" className={navLinkClass}>
+              Forensic Suite
+            </NavLink>
+            <NavLink to="/blog" className={navLinkClass}>
+              Blog
             </NavLink>
             <NavLink to="/pricing" className={navLinkClass}>
               Pricing
             </NavLink>
-            <NavLink to="/case-summary" className={navLinkClass}>
-              Case Summary
-            </NavLink>
-            <NavLink to="/privacy" className={navLinkClass}>
-              Privacy
-            </NavLink>
           </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-4xl px-6 py-12">{children}</main>
+      <main className="mx-auto max-w-5xl px-6 py-12">{children}</main>
       <footer className="border-t border-sky bg-white/80">
-        <div className="mx-auto max-w-4xl space-y-2 px-6 py-6 text-xs text-slate-500">
+        <div className="mx-auto max-w-5xl space-y-2 px-6 py-6 text-xs text-slate-500">
           Your data. Your control. Official paths only.
-          <div>
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <Link to="/trust" className="font-semibold text-slate-500 underline">
+              Trust Center
+            </Link>
+            <span className="text-slate-400">•</span>
+            <Link to="/terms" className="font-semibold text-slate-500 underline">
+              Terms of Service
+            </Link>
+            <span className="text-slate-400">•</span>
             <Link to="/privacy" className="font-semibold text-slate-500 underline">
               Privacy Policy
             </Link>
-            <span className="px-2 text-slate-400">•</span>
-            <Link to="/terms" className="font-semibold text-slate-500 underline">
-              Terms
+            <span className="text-slate-400">•</span>
+            <Link to="/forensic" className="font-semibold text-slate-500 underline">
+              Forensic Suite
             </Link>
-            <span className="px-2 text-slate-400">•</span>
-            <Link to="/support" className="font-semibold text-slate-500 underline">
-              Support
+            <span className="text-slate-400">•</span>
+            <Link to="/blog" className="font-semibold text-slate-500 underline">
+              Blog
             </Link>
           </div>
         </div>

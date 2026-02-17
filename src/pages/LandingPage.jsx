@@ -16,26 +16,25 @@ export default function LandingPage() {
           Recover what you thought was gone.
         </h1>
         <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-slate-600">
-          SafeRestore is an AI-powered data recovery concierge that guides you
-          through the safest, official ways to recover photos, messages, and
-          files from your iPhone.
+          SafeRestore provides structured recovery and forensic workflows focused
+          on read-only acquisition, verified outputs, and documented handling.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-4">
           <Link to="/recovery" className={`${primaryButton} shadow-sm`}>
             Start Recovery
           </Link>
-          <Link to="/concierge" className={secondaryButton}>
-            Talk to the Concierge
+          <Link to="/forensic" className={secondaryButton}>
+            Explore Forensic Suite
           </Link>
         </div>
       </div>
 
       <div className="flex flex-wrap gap-3">
         {[
-          "Privacy-first",
-          "Read-only guidance",
-          "Official recovery paths",
-          "You stay in control",
+          "Read-only imaging workflows",
+          "E01 export + post-acquisition verification",
+          "Chain-of-custody logging",
+          "Clear forensic vs recovery tiers",
         ].map((item) => (
           <span
             key={item}
@@ -47,23 +46,23 @@ export default function LandingPage() {
       </div>
 
       <div className="space-y-6 text-left">
-        <h2 className="text-xl font-semibold text-slate">How it Works</h2>
+        <h2 className="text-xl font-semibold text-slate">Operational Approach</h2>
         <div className="grid gap-6 md:grid-cols-3">
           {[
             {
-              title: "Tell us what happened",
+              title: "Read-only first",
               description:
-                "Whether your phone was damaged, data went missing after an upgrade, or files were deleted by mistake, we’ll understand your situation first.",
+                "Acquisition workflows are designed to reduce source modifications and preserve original media state.",
             },
             {
-              title: "Get a clear recovery plan",
+              title: "Verify outputs",
               description:
-                "Our AI concierge determines the safest official recovery path based on your device, iOS version, and what access you still have.",
+                "E01 and related outputs include hash and post-acquisition verification checkpoints for consistency.",
             },
             {
-              title: "Follow guided steps",
+              title: "Match the right tier",
               description:
-                "No guessing and no panic. Just calm, step-by-step guidance using approved Apple recovery tools and processes.",
+                "Recovery mode targets standard restoration; forensic mode targets evidence-sensitive handling and reporting.",
             },
           ].map((item) => (
             <div
@@ -82,8 +81,8 @@ export default function LandingPage() {
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white p-8 text-sm leading-relaxed text-slate-600">
-        SafeRestore never bypasses device security or accesses data without your
-        consent. We guide you — you authorize every step.
+        SafeRestore does not bypass encryption or passcodes. Outcomes depend on
+        media condition, tooling setup, and operator procedure.
       </div>
     </section>
   );
