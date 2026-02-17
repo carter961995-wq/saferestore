@@ -4,146 +4,97 @@ export default function TrustCenter() {
       <div className="space-y-3">
         <h1 className="text-3xl font-semibold text-slate">Trust Center</h1>
         <p className="text-base leading-relaxed text-slate-600">
-          SafeRestore is designed for recovery teams, forensic practitioners,
-          and legal stakeholders who need transparent, defensible workflows.
+          SafeRestore documents evidence-handling practices in clear operational
+          terms for technical, legal, and compliance review.
         </p>
       </div>
 
-      <article className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
-        <h2 className="text-base font-semibold text-slate">1) Read-only acquisition design</h2>
-        <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-600">
-          <li>
-            SafeRestore acquisition workflows are designed to avoid writing to
-            source media during acquisition steps.
-          </li>
-          <li>
-            This helps preserve original evidence state and reduce risk of
-            accidental modification.
-          </li>
-          <li>
-            Operators should still validate hardware and OS mount behavior
-            before each case.
-          </li>
-        </ul>
-      </article>
-
-      <article className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
-        <h2 className="text-base font-semibold text-slate">2) Hardware write blocker recommendation</h2>
-        <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-600">
-          <li>
-            Best practice is to use a hardware write blocker for physical media
-            acquisition when available.
-          </li>
-          <li>
-            SafeRestore is designed to be compatible with industry-standard
-            write blocker workflows.
-          </li>
-          <li>
-            Confirm firmware, cabling, and device recognition as part of your
-            intake checklist.
-          </li>
-        </ul>
-      </article>
-
-      <article className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
-        <h2 className="text-base font-semibold text-slate">3) Imaging formats supported</h2>
-        <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-600">
-          <li>
-            RAW/DD: sector-level image format commonly used for portability and
-            tooling compatibility.
-          </li>
-          <li>
-            E01: segmented, metadata-friendly evidence format used in many
-            forensic workflows.
-          </li>
-        </ul>
-      </article>
-
-      <article className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
-        <h2 className="text-base font-semibold text-slate">4) Hashing and integrity (MD5 and SHA-256)</h2>
-        <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-600">
-          <li>
-            A hash is a digital fingerprint of evidence data at a point in time.
-          </li>
-          <li>
-            SafeRestore workflows support MD5 and SHA-256 integrity records.
-          </li>
-          <li>
-            Matching hashes help show that an image has not changed after
-            acquisition.
-          </li>
-        </ul>
-      </article>
-
-      <article className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
-        <h2 className="text-base font-semibold text-slate">5) Post-acquisition verification</h2>
-        <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-600">
-          <li>
-            After imaging completes, re-hash the finished image file.
-          </li>
-          <li>
-            Compare that hash to the acquisition hash values recorded at capture
-            time.
-          </li>
-          <li>
-            A match indicates the stored image is consistent with what was
-            acquired.
-          </li>
-        </ul>
-      </article>
-
-      <article className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
-        <h2 className="text-base font-semibold text-slate">6) Chain of custody logging</h2>
+      <section className="space-y-2 rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 className="text-base font-semibold text-slate">Read-only acquisition design</h2>
         <p className="text-sm leading-relaxed text-slate-600">
-          Case records should include structured chain-of-custody entries for
-          each handoff and processing event.
+          Acquisition workflows are designed to avoid writes to source media
+          during capture steps.
         </p>
-        <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-600">
-          <li>Case ID</li>
+        <ul className="list-disc space-y-1 pl-5 text-sm text-slate-600">
+          <li>Preserves source state when procedure is followed correctly.</li>
+          <li>Reduces accidental evidence modification risk.</li>
+        </ul>
+      </section>
+
+      <section className="space-y-2 rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 className="text-base font-semibold text-slate">Hardware write blocker recommendation</h2>
+        <p className="text-sm leading-relaxed text-slate-600">
+          Hardware write blockers are recommended for physical media workflows.
+        </p>
+        <ul className="list-disc space-y-1 pl-5 text-sm text-slate-600">
+          <li>Supports compatibility with standard forensic blocker workflows.</li>
+          <li>Operators should validate blocker state before acquisition.</li>
+        </ul>
+      </section>
+
+      <section className="space-y-2 rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 className="text-base font-semibold text-slate">Imaging formats (RAW/DD, E01)</h2>
+        <p className="text-sm leading-relaxed text-slate-600">
+          Imaging workflows support common forensic formats used in downstream tools.
+        </p>
+        <ul className="list-disc space-y-1 pl-5 text-sm text-slate-600">
+          <li>RAW/DD</li>
+          <li>E01</li>
+        </ul>
+      </section>
+
+      <section className="space-y-2 rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 className="text-base font-semibold text-slate">Hashing (MD5, SHA256)</h2>
+        <p className="text-sm leading-relaxed text-slate-600">
+          Hashes provide a digital fingerprint to verify evidence consistency.
+        </p>
+        <ul className="list-disc space-y-1 pl-5 text-sm text-slate-600">
+          <li>MD5 hash record</li>
+          <li>SHA256 hash record</li>
+        </ul>
+      </section>
+
+      <section className="space-y-2 rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 className="text-base font-semibold text-slate">Post-acquisition verification</h2>
+        <p className="text-sm leading-relaxed text-slate-600">
+          Re-hashing completed images and comparing to acquisition values is used
+          to confirm consistency after capture.
+        </p>
+      </section>
+
+      <section className="space-y-2 rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 className="text-base font-semibold text-slate">Chain-of-custody logging</h2>
+        <p className="text-sm leading-relaxed text-slate-600">
+          Case logs track evidence lifecycle events.
+        </p>
+        <ul className="list-disc space-y-1 pl-5 text-sm text-slate-600">
+          <li>Case identifiers</li>
           <li>Operator identity</li>
           <li>Timestamps</li>
-          <li>Device identifiers</li>
-          <li>Acquisition and verification hashes</li>
-          <li>Export events and recipients</li>
+          <li>Device identifiers and hashes</li>
+          <li>Export and handoff events</li>
         </ul>
-      </article>
+      </section>
 
-      <article className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
-        <h2 className="text-base font-semibold text-slate">7) Security and privacy</h2>
-        <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-600">
-          <li>
-            Case artifacts and logs are designed for controlled local handling.
-          </li>
-          <li>
-            Network transmission should be limited to explicitly configured
-            service operations.
-          </li>
-          <li>
-            SafeRestore does not bypass encryption, passcodes, or platform
-            security controls.
-          </li>
+      <section className="space-y-2 rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 className="text-base font-semibold text-slate">Security and privacy</h2>
+        <p className="text-sm leading-relaxed text-slate-600">
+          SafeRestore does not bypass passcodes or encryption controls.
+        </p>
+        <ul className="list-disc space-y-1 pl-5 text-sm text-slate-600">
+          <li>Local-first handling where possible.</li>
+          <li>Controlled transmission only for explicitly invoked services.</li>
         </ul>
-      </article>
+      </section>
 
-      <article className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
-        <h2 className="text-base font-semibold text-slate">8) Limitations</h2>
-        <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-600">
-          <li>Recovery and extraction results depend on media condition.</li>
-          <li>
-            Operator procedure, tooling configuration, and documentation quality
-            directly affect outcomes.
-          </li>
-          <li>
-            SafeRestore does not guarantee courtroom admissibility in every
-            matter.
-          </li>
+      <section className="space-y-2 rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 className="text-base font-semibold text-slate">Limitations</h2>
+        <ul className="list-disc space-y-1 pl-5 text-sm text-slate-600">
+          <li>Results depend on media condition.</li>
+          <li>Operator procedure quality affects outcomes.</li>
+          <li>No blanket guarantee of courtroom admissibility.</li>
         </ul>
-      </article>
-
-      <p className="text-sm text-slate-500">
-        SafeRestore focuses on reproducible process design, integrity checks,
-        and transparent operator workflows.
-      </p>
+      </section>
     </section>
   );
 }
