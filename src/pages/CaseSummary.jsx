@@ -1,6 +1,41 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { logEvent } from "../lib/analytics.js";
+
+function timestampIso() {
+  return new Date().toISOString();
+}
+
+function caseIdFromTimestamp() {
+  const now = new Date();
+  const datePart = `${now.getUTCFullYear()}${String(now.getUTCMonth() + 1).padStart(
+    2,
+    "0"
+  )}${String(now.getUTCDate()).padStart(2, "0")}`;
+  const randPart = Math.random().toString(36).slice(2, 7).toUpperCase();
+  return `SR-${datePart}-${randPart}`;
+}
+
+function downloadBlob(filename, text, type = "text/plain;charset=utf-8") {
+  const blob = new Blob([text], { type });
+  const href = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = href;
+  anchor.download = filename;
+  anchor.click();
+  URL.revokeObjectURL(href);
+}
+
+async function sha256Hex(input) {
+  if (!window.crypto?.subtle) {
+    return "unavailable";
+  }
+  const data = new TextEncoder().encode(input);
+  const digest = await window.crypto.subtle.digest("SHA-256", data);
+  return [...new Uint8Array(digest)]
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
 
 export default function CaseSummary() {
   const [whatHappened, setWhatHappened] = useState("");
@@ -11,6 +46,8 @@ export default function CaseSummary() {
   const [notes, setNotes] = useState("");
   const [copied, setCopied] = useState(false);
   const [showValidation, setShowValidation] = useState(false);
+  const [packStatus, setPackStatus] = useState("");
+  const [currentCaseId] = useState(caseIdFromTimestamp);
 
   const inputBase =
     "rounded-lg border bg-slate-50 px-3 py-2 text-sm text-slate focus:border-ocean focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean/30";
@@ -37,22 +74,37 @@ export default function CaseSummary() {
     }
   }, []);
 
-  const summaryText = [
-    "SafeRestore — Case Summary",
-    "",
-    "Your Details",
-    `• What happened?: ${whatHappened || "-"}`,
-    `• iPhone model: ${iphoneModel || "-"}`,
-    `• iOS version (optional): ${iosVersion || "-"}`,
-    `• Does the old device power on?: ${powersOn || "-"}`,
-    `• Apple ID / iCloud access status: ${accessStatus || "-"}`,
-    "",
-    "Recommended Official Path",
-    "Based on your details, SafeRestore recommends using official Apple recovery and restore tools as the safest next step.",
-    "",
-    "Notes for Support",
-    notes || "-",
-  ].join("\n");
+  const summaryText = useMemo(
+    () =>
+      [
+        "SafeRestore — Case Summary",
+        "",
+        `Case ID: ${currentCaseId}`,
+        `Generated At (UTC): ${timestampIso()}`,
+        "",
+        "Your Details",
+        `• What happened?: ${whatHappened || "-"}`,
+        `• iPhone model: ${iphoneModel || "-"}`,
+        `• iOS version (optional): ${iosVersion || "-"}`,
+        `• Does the old device power on?: ${powersOn || "-"}`,
+        `• Apple ID / iCloud access status: ${accessStatus || "-"}`,
+        "",
+        "Recommended Official Path",
+        "Based on your details, SafeRestore recommends using official Apple recovery and restore tools as the safest next step.",
+        "",
+        "Notes for Support",
+        notes || "-",
+      ].join("\n"),
+    [
+      accessStatus,
+      currentCaseId,
+      iosVersion,
+      iphoneModel,
+      notes,
+      powersOn,
+      whatHappened,
+    ]
+  );
 
   const handleCopy = async () => {
     if (!isWhatHappenedValid || !isIphoneModelValid) {
@@ -85,6 +137,100 @@ export default function CaseSummary() {
     window.setTimeout(() => setCopied(false), 1600);
   };
 
+  const exportLegalPack = async () => {
+    if (!isWhatHappenedValid || !isIphoneModelValid) {
+      setShowValidation(true);
+      return;
+    }
+
+    setPackStatus("Generating legal pack...");
+
+    const generatedAt = timestampIso();
+    const casePayload = {
+      caseId: currentCaseId,
+      generatedAt,
+      operator: "Operator Name (placeholder)",
+      sourceDevice: {
+        model: iphoneModel || "unknown",
+        iosVersion: iosVersion || "unknown",
+        powersOn: powersOn || "unknown",
+        accessStatus: accessStatus || "unknown",
+      },
+      incident: whatHappened || "unknown",
+      notes: notes || "",
+      recommendedPath:
+        "Use official Apple recovery and restore tools; no bypassing passcodes or encryption.",
+    };
+
+    const reportText = summaryText;
+    const reportHash = await sha256Hex(reportText);
+    const payloadHash = await sha256Hex(JSON.stringify(casePayload));
+
+    const chainOfCustody = [
+      {
+        event: "Case Intake",
+        timestamp: generatedAt,
+        actor: "System",
+        detail: "Case summary assembled from operator inputs.",
+      },
+      {
+        event: "Legal Pack Export",
+        timestamp: timestampIso(),
+        actor: "System",
+        detail: "Report, custody log, and manifest exported.",
+      },
+    ];
+
+    const manifest = {
+      files: [
+        { name: `report-${currentCaseId}.txt`, sha256: reportHash },
+        { name: `custody-${currentCaseId}.csv`, sha256: "generated-at-export" },
+        { name: `legal-pack-${currentCaseId}.json`, sha256: "self-referential" },
+      ],
+      disclaimers: [
+        "Tool assists analysis; operator procedure determines evidentiary reliability.",
+        "No bypassing encryption, passcodes, or unauthorized access.",
+      ],
+    };
+
+    const legalPack = {
+      reportVersion: "1.0",
+      case: casePayload,
+      integrity: {
+        summarySha256: reportHash,
+        casePayloadSha256: payloadHash,
+      },
+      chainOfCustody,
+      manifest,
+    };
+
+    const csvRows = [
+      ["event", "timestamp", "actor", "detail"],
+      ...chainOfCustody.map((row) => [
+        row.event,
+        row.timestamp,
+        row.actor,
+        row.detail,
+      ]),
+    ];
+
+    const custodyCsv = csvRows
+      .map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(","))
+      .join("\n");
+
+    downloadBlob(`report-${currentCaseId}.txt`, reportText);
+    downloadBlob(`custody-${currentCaseId}.csv`, custodyCsv, "text/csv;charset=utf-8");
+    downloadBlob(
+      `legal-pack-${currentCaseId}.json`,
+      JSON.stringify(legalPack, null, 2),
+      "application/json;charset=utf-8"
+    );
+
+    logEvent("legal_pack_exported", { caseId: currentCaseId });
+    setPackStatus("Legal pack downloaded.");
+    window.setTimeout(() => setPackStatus(""), 3000);
+  };
+
   const handleClear = () => {
     localStorage.removeItem("saferestore_caseData");
     logEvent("case_cleared");
@@ -94,6 +240,7 @@ export default function CaseSummary() {
     setPowersOn("");
     setAccessStatus("");
     setNotes("");
+    setPackStatus("");
   };
 
   return (
@@ -192,25 +339,31 @@ export default function CaseSummary() {
         />
       </div>
 
+      <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 className="text-base font-semibold text-slate">Legal Pack Export</h2>
+        <p className="text-sm leading-relaxed text-slate-600">
+          Generate a court-review-ready starter pack with report text, SHA-256
+          integrity hashes, chain-of-custody CSV, and a manifest JSON.
+        </p>
+        <div className="text-xs text-slate-500">Case ID: {currentCaseId}</div>
+        {packStatus ? (
+          <div className="text-xs font-semibold text-ocean">{packStatus}</div>
+        ) : null}
+      </div>
+
       <div className="flex flex-wrap gap-4">
         <div className="flex items-center gap-3">
-          <button
-            className={primaryButton}
-            type="button"
-            onClick={handleCopy}
-          >
+          <button className={primaryButton} type="button" onClick={handleCopy}>
             Copy Summary
           </button>
           {copied ? (
-            <span className="text-sm font-semibold text-slate-500">
-              Copied
-            </span>
+            <span className="text-sm font-semibold text-slate-500">Copied</span>
           ) : null}
         </div>
-        <Link
-          to="/recovery"
-          className={secondaryButton}
-        >
+        <button className={secondaryButton} type="button" onClick={exportLegalPack}>
+          Export Legal Pack
+        </button>
+        <Link to="/recovery" className={secondaryButton}>
           Back to Recovery
         </Link>
         <button
