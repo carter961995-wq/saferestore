@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { apiFetch } from "../lib/apiClient.js";
 
 export default function ConciergeChat() {
   const [messages, setMessages] = useState([]);
@@ -37,9 +38,8 @@ export default function ConciergeChat() {
   const handleRetry = () => setError(false);
 
   const startCheckout = async (tier) => {
-    const res = await fetch("/api/checkout", {
+    const res = await apiFetch("/api/checkout", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ tier }),
     });
     const data = await res.json();
@@ -52,17 +52,19 @@ export default function ConciergeChat() {
     setError(false);
 
     try {
-      const res = await fetch("/api/chat", {
+      const res = await apiFetch("/api/chat", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: userMessage }),
+        body: JSON.stringify({
+          messages: [{ role: "user", content: userMessage }],
+          caseDataSummary: "",
+        }),
       });
 
       const data = await res.json();
 
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", text: data.reply || "No response received." },
+        { role: "assistant", text: data.message || "No response received." },
       ]);
     } catch {
       setError(true);

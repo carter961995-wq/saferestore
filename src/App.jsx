@@ -10,6 +10,7 @@ import Soc2Page from "./pages/Soc2Page.jsx";
 import ForensicPage from "./pages/ForensicPage.jsx";
 import BlogPage from "./pages/BlogPage.jsx";
 import BlogPostPage from "./pages/BlogPostPage.jsx";
+import SecurityConsolePage from "./pages/SecurityConsolePage.jsx";
 import CaseSummary from "./pages/CaseSummary.jsx";
 import EventsPage from "./pages/EventsPage.jsx";
 import { logEvent } from "./lib/analytics.js";
@@ -56,6 +57,11 @@ const pageSeo = {
     title: "Blog",
     description:
       "SafeRestore blog coverage for forensic workflows, chain-of-custody, and legal-ready recovery operations.",
+  },
+  "/security-console": {
+    title: "Security Console",
+    description:
+      "Configure role context, validate RBAC, and review audit trails for enterprise workflows.",
   },
   "/pricing": {
     title: "Pricing",
@@ -167,6 +173,7 @@ export default function App() {
         <Route path="/forensic" element={<ForensicPage />} />
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/blog/:slug" element={<BlogPostPage />} />
+        <Route path="/security-console" element={<SecurityConsolePage />} />
         <Route path="/pricing" element={<Pricing />} />
         <Route path="/case-summary" element={<CaseSummary />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
