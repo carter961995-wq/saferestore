@@ -45,9 +45,9 @@ const pageSeo = {
       "Review SafeRestore's SOC 2 control program, evidence workflows, and security governance model.",
   },
   "/forensic": {
-    title: "Forensic Recovery",
+    title: "Forensic Suite",
     description:
-      "Forensic-oriented acquisition, integrity, and documentation workflows for high-assurance cases.",
+      "Digital forensics workflow guidance for investigative and legal teams, including E01 imaging, hash verification, and chain-of-custody documentation.",
   },
   "/pricing": {
     title: "Pricing",
