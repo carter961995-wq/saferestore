@@ -10,23 +10,20 @@ export default function ConciergeChat() {
 
   const bottomRef = useRef(null);
 
-  // Auto-scroll
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isThinking]);
 
-  // Welcome message
   useEffect(() => {
     setMessages([
       {
         role: "assistant",
         text:
-          "Hi 👋 I’m SafeRestore Concierge. Tell me what happened to your device and I’ll guide you through Apple-approved recovery options.",
+          "Hi. I am SafeRestore Concierge. Tell me what happened to your device and I will guide you through Apple-approved recovery options.",
       },
     ]);
   }, []);
 
-  // Unlock after Stripe success
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("paid") === "1") {
@@ -67,7 +64,7 @@ export default function ConciergeChat() {
         ...prev,
         { role: "assistant", text: data.reply || "No response received." },
       ]);
-    } catch (err) {
+    } catch {
       setError(true);
       setMessages((prev) => [
         ...prev,
@@ -94,10 +91,7 @@ export default function ConciergeChat() {
     const userMessage = input;
     setInput("");
 
-    setMessages((prev) => [
-      ...prev,
-      { role: "user", text: userMessage },
-    ]);
+    setMessages((prev) => [...prev, { role: "user", text: userMessage }]);
 
     await sendMessage(userMessage);
   };
@@ -207,9 +201,7 @@ export default function ConciergeChat() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={
-              showPaywall
-                ? "Choose a plan to continue…"
-                : "Type your question…"
+              showPaywall ? "Choose a plan to continue..." : "Type your question..."
             }
             disabled={loading || showPaywall}
           />
@@ -219,4 +211,10 @@ export default function ConciergeChat() {
             type="submit"
             disabled={loading || showPaywall || !input.trim()}
           >
-            {l
+            {loading ? "Sending..." : "Send"}
+          </button>
+        </form>
+      </div>
+    </section>
+  );
+}

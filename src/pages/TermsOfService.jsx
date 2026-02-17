@@ -1,75 +1,77 @@
 export default function TermsOfService() {
   return (
     <section className="space-y-8">
-      <h1 className="text-3xl font-semibold text-slate">Terms of Service</h1>
-
-      <p className="text-sm leading-relaxed text-slate-600">
-        SafeRestore provides guidance to help you recover data using official,
-        approved options. We do not perform data extraction and we do not bypass
-        device security.
-      </p>
-
       <div className="space-y-3">
-        <h2 className="text-base font-semibold text-slate">
-          What SafeRestore is
-        </h2>
-        <p className="text-sm leading-relaxed text-slate-600">
-          SafeRestore is a guidance-only service. We provide step-by-step
-          recommendations based on the information you choose to share.
+        <h1 className="text-3xl font-semibold text-slate">Terms of Service</h1>
+        <p className="text-base leading-relaxed text-slate-600">
+          SafeRestore assists with analysis and workflow guidance. You are
+          responsible for procedure quality, legal compliance, and authorization
+          for any device or data you process.
         </p>
       </div>
 
-      <div className="space-y-3">
-        <h2 className="text-base font-semibold text-slate">
-          What SafeRestore is not
-        </h2>
-        <ul className="list-disc space-y-1 pl-5 text-sm text-slate-600">
-          <li>A data extraction tool</li>
-          <li>A device unlocking service</li>
-          <li>A guaranteed recovery solution</li>
+      <article className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 className="text-base font-semibold text-slate">Use and responsibility</h2>
+        <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-600">
+          <li>
+            SafeRestore provides software guidance and analysis support, not
+            legal advice.
+          </li>
+          <li>
+            You are responsible for lawful authorization, chain-of-custody
+            procedure, and jurisdictional compliance.
+          </li>
         </ul>
-      </div>
+      </article>
 
-      <div className="space-y-3">
-        <h2 className="text-base font-semibold text-slate">No guarantees</h2>
-        <p className="text-sm leading-relaxed text-slate-600">
-          Recovery outcomes depend on your device condition, your account access,
-          and Apple’s systems. SafeRestore cannot guarantee recovery.
-        </p>
-      </div>
+      <article className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 className="text-base font-semibold text-slate">Admissibility and outcome limitations</h2>
+        <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-600">
+          <li>
+            No guarantee is made that output will be admissible in court.
+          </li>
+          <li>
+            Results depend on device condition, media state, and operator
+            procedure.
+          </li>
+        </ul>
+      </article>
 
-      <div className="space-y-3">
-        <h2 className="text-base font-semibold text-slate">
-          User responsibility
-        </h2>
-        <p className="text-sm leading-relaxed text-slate-600">
-          You are responsible for confirming that you own the device and have
-          authorization to perform recovery actions. You authorize every step
-          you take.
-        </p>
-      </div>
+      <article className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 className="text-base font-semibold text-slate">Warranty disclaimer and limitation of liability</h2>
+        <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-600">
+          <li>
+            The software is provided "AS IS" and "AS AVAILABLE" without
+            warranties of any kind.
+          </li>
+          <li>
+            To the maximum extent permitted by law, SafeRestore is not liable
+            for indirect, incidental, special, consequential, or punitive
+            damages, including data loss, business interruption, or lost
+            profits.
+          </li>
+        </ul>
+      </article>
 
-      <div className="space-y-3">
+      <article className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
         <h2 className="text-base font-semibold text-slate">Acceptable use</h2>
-        <p className="text-sm leading-relaxed text-slate-600">
-          You may not use SafeRestore to attempt to access data without
-          authorization or to bypass security controls.
-        </p>
-      </div>
+        <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-slate-600">
+          <li>No illegal access or unauthorized data acquisition.</li>
+          <li>No attempts to bypass encryption, passcodes, or platform controls.</li>
+          <li>No use that violates contractual, regulatory, or criminal law.</li>
+        </ul>
+      </article>
 
-      <div className="space-y-3">
+      <article className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
         <h2 className="text-base font-semibold text-slate">Contact</h2>
         <p className="text-sm leading-relaxed text-slate-600">
-          Questions about these terms can be sent to:
+          Terms and legal requests: legal@saferestorehelp.com
         </p>
-        <p className="text-sm font-semibold text-slate-600">
-          support@saferestore.app
-        </p>
-      </div>
+      </article>
 
-      <div className="text-sm text-slate-500">
-        Your data. Your control. Official paths only.
-      </div>
+      <p className="text-sm text-slate-500">
+        Continued use of SafeRestore means you accept these terms.
+      </p>
     </section>
   );
 }

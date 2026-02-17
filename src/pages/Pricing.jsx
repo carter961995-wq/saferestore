@@ -2,34 +2,74 @@ import { Link } from "react-router-dom";
 
 const plans = [
   {
-    title: "One-Time Recovery Session",
-    price: "$39",
+    title: "Starter Recovery",
+    price: "$39 one-time",
+    description: "Guided recovery for single incidents.",
     bullets: [
-      "Guided intake and recovery plan",
-      "Step-by-step official recovery guidance",
-      "Concierge chat (basic)",
+      "Structured intake and risk triage",
+      "Official-path recovery guidance",
+      "Basic concierge support",
+      "Single case summary export",
     ],
-    button: "Start Recovery",
+    button: "Start Starter",
   },
   {
-    title: "Priority Concierge",
-    price: "$79",
+    title: "Advanced Recovery",
+    price: "$79 one-time",
+    description: "For complex or high-priority incidents.",
     bullets: [
-      "Everything in One-Time Recovery Session",
-      "Priority concierge chat guidance",
-      "Case summary you can save and share",
+      "Everything in Starter Recovery",
+      "Priority concierge response lane",
+      "Advanced scan and workflow guidance",
+      "Forensic-friendly evidence packaging",
     ],
-    button: "Get Priority Help",
+    button: "Start Advanced",
+    featured: true,
   },
   {
-    title: "SafeRestore Plus",
+    title: "Pro Subscription",
     price: "$12 / month",
+    description: "Ongoing readiness for teams and power users.",
     bullets: [
-      "Unlimited recovery plans",
-      "Backup readiness checks",
-      "Ongoing guidance when you upgrade devices",
+      "Unlimited guided recovery plans",
+      "Continuous backup readiness checks",
+      "Policy-aware autonomous guidance",
+      "Ongoing case tracking and history",
     ],
-    button: "Start Plus",
+    button: "Start Pro",
+  },
+];
+
+const compareRows = [
+  {
+    label: "Official-path recovery guidance",
+    starter: "Yes",
+    advanced: "Yes",
+    pro: "Yes",
+  },
+  {
+    label: "Advanced scan workflows",
+    starter: "No",
+    advanced: "Yes",
+    pro: "Yes",
+  },
+  {
+    label: "Forensic evidence package support",
+    starter: "No",
+    advanced: "Yes",
+    pro: "Yes",
+  },
+  {
+    label: "Ongoing readiness checks",
+    starter: "No",
+    advanced: "No",
+    pro: "Yes",
+  },
+  {
+    label: "Priority support lane",
+    starter: "No",
+    advanced: "Yes",
+    pro: "Yes",
   },
 ];
 
@@ -42,8 +82,8 @@ export default function Pricing() {
       <div className="space-y-3">
         <h1 className="text-3xl font-semibold text-slate">Pricing</h1>
         <p className="text-base leading-relaxed text-slate-600">
-          Choose the level of guidance you need. SafeRestore is official-path
-          only — no security bypasses, no guesswork.
+          Choose the plan that matches your recovery complexity. All plans stay
+          on official, authorized recovery paths.
         </p>
       </div>
 
@@ -51,12 +91,20 @@ export default function Pricing() {
         {plans.map((plan) => (
           <div
             key={plan.title}
-            className="flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+            className={`flex h-full flex-col rounded-2xl border p-6 shadow-sm ${
+              plan.featured
+                ? "border-ocean bg-ocean/5"
+                : "border-slate-200 bg-white"
+            }`}
           >
+            {plan.featured ? (
+              <span className="mb-3 inline-flex w-fit rounded-full bg-ocean/10 px-3 py-1 text-xs font-semibold text-ocean">
+                Most Popular
+              </span>
+            ) : null}
             <h2 className="text-base font-semibold text-slate">{plan.title}</h2>
-            <p className="mt-3 text-2xl font-semibold text-slate">
-              {plan.price}
-            </p>
+            <p className="mt-1 text-sm text-slate-500">{plan.description}</p>
+            <p className="mt-3 text-2xl font-semibold text-slate">{plan.price}</p>
             <ul className="mt-4 space-y-2 text-sm text-slate-600">
               {plan.bullets.map((bullet) => (
                 <li key={bullet} className="list-disc pl-4">
@@ -74,8 +122,41 @@ export default function Pricing() {
         ))}
       </div>
 
-      <div className="text-sm text-slate-500">
-        No bypasses. No pressure. Just the safest official path forward.
+      <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 className="text-base font-semibold text-slate">Plan Comparison</h2>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-left text-sm text-slate-600">
+            <thead>
+              <tr className="border-b border-slate-200 text-slate">
+                <th className="py-2 pr-4">Feature</th>
+                <th className="py-2 pr-4">Starter</th>
+                <th className="py-2 pr-4">Advanced</th>
+                <th className="py-2">Pro</th>
+              </tr>
+            </thead>
+            <tbody>
+              {compareRows.map((row) => (
+                <tr key={row.label} className="border-b border-slate-100">
+                  <td className="py-2 pr-4 text-slate">{row.label}</td>
+                  <td className="py-2 pr-4">{row.starter}</td>
+                  <td className="py-2 pr-4">{row.advanced}</td>
+                  <td className="py-2">{row.pro}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 className="text-base font-semibold text-slate">Need enterprise pricing?</h2>
+        <p className="text-sm leading-relaxed text-slate-600">
+          If you need multi-seat governance, compliance reporting workflows, or
+          procurement support, contact us for an enterprise quote.
+        </p>
+        <Link to="/support" className="inline-flex text-sm font-semibold text-ocean underline">
+          Contact sales and support
+        </Link>
       </div>
     </section>
   );
