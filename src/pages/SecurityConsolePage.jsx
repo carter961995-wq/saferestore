@@ -60,6 +60,26 @@ const SOC2_CONTROLS = [
   },
 ];
 
+const EVIDENCE_ARTIFACTS = [
+  { id: "access_matrix", label: "Access role matrix", required: true },
+  { id: "identity_registry", label: "Named identity registry", required: false },
+  { id: "audit_log_export", label: "Audit event export", required: true },
+  { id: "change_approvals", label: "Change approval records", required: true },
+  { id: "incident_runbook", label: "Incident response runbook", required: true },
+  { id: "backup_test_record", label: "Backup/recovery test record", required: false },
+  { id: "integrity_validation_log", label: "Integrity validation log", required: false },
+];
+
+const CONTROL_ARTIFACT_MAP = {
+  cc6_1: ["access_matrix", "audit_log_export"],
+  cc6_2: ["identity_registry", "audit_log_export"],
+  cc7_2: ["audit_log_export"],
+  cc7_3: ["change_approvals"],
+  a1_2: ["incident_runbook", "backup_test_record"],
+  c1_1: ["access_matrix", "change_approvals"],
+  pi1_1: ["integrity_validation_log", "audit_log_export"],
+};
+
 function toInitialStatusMap() {
   return SOC2_CONTROLS.reduce((acc, control) => {
     acc[control.id] = "missing";
@@ -67,16 +87,25 @@ function toInitialStatusMap() {
   }, {});
 }
 
-function downloadJson(filename, data) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], {
-    type: "application/json;charset=utf-8",
-  });
+function toInitialArtifactMap() {
+  return EVIDENCE_ARTIFACTS.reduce((acc, artifact) => {
+    acc[artifact.id] = false;
+    return acc;
+  }, {});
+}
+
+function downloadFile(filename, content, type) {
+  const blob = new Blob([content], { type });
   const href = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = href;
   anchor.download = filename;
   anchor.click();
   URL.revokeObjectURL(href);
+}
+
+function downloadJson(filename, data) {
+  downloadFile(filename, JSON.stringify(data, null, 2), "application/json;charset=utf-8");
 }
 
 function nextDateISO(daysFromNow) {
@@ -113,6 +142,12 @@ function getActionHint(control) {
   return "Document remediation steps and evidence owner.";
 }
 
+function toCsv(rows) {
+  return rows
+    .map((row) => row.map((value) => `"${String(value).replaceAll('"', '""')}"`).join(","))
+    .join("\n");
+}
+
 export default function SecurityConsolePage() {
   const initial = getSecurityContext();
   const [role, setRole] = useState(initial.role);
@@ -124,6 +159,12 @@ export default function SecurityConsolePage() {
   const [controlNotes, setControlNotes] = useState({});
   const [remediationOwners, setRemediationOwners] = useState({});
   const [remediationProgress, setRemediationProgress] = useState({});
+  const [artifactChecks, setArtifactChecks] = useState(toInitialArtifactMap);
+  const [artifactRefs, setArtifactRefs] = useState({});
+  const [auditPeriodStart, setAuditPeriodStart] = useState("");
+  const [auditPeriodEnd, setAuditPeriodEnd] = useState("");
+  const [reviewerName, setReviewerName] = useState("");
+  const [reviewerSignoff, setReviewerSignoff] = useState(false);
 
   const summary = useMemo(() => {
     const controls = SOC2_CONTROLS.map((control) => ({
@@ -184,6 +225,42 @@ export default function SecurityConsolePage() {
     [actor, remediationOwners, remediationProgress, summary.openGaps]
   );
 
+  const artifactSummary = useMemo(() => {
+    const items = EVIDENCE_ARTIFACTS.map((artifact) => ({
+      ...artifact,
+      present: Boolean(artifactChecks[artifact.id]),
+      reference: artifactRefs[artifact.id] || "",
+    }));
+
+    const required = items.filter((item) => item.required);
+    const requiredMissing = required.filter((item) => !item.present);
+    const coverage = Math.round((items.filter((item) => item.present).length / items.length) * 100);
+
+    return { items, requiredMissing, coverage };
+  }, [artifactChecks, artifactRefs]);
+
+  const controlEvidenceMap = useMemo(
+    () =>
+      summary.controls.map((control) => {
+        const mapped = (CONTROL_ARTIFACT_MAP[control.id] || []).map((artifactId) => {
+          const artifact = artifactSummary.items.find((item) => item.id === artifactId);
+          return {
+            artifactId,
+            label: artifact?.label || artifactId,
+            present: Boolean(artifact?.present),
+            reference: artifact?.reference || "",
+          };
+        });
+        return {
+          controlId: control.id,
+          controlTitle: control.title,
+          controlStatus: control.status,
+          mappedArtifacts: mapped,
+        };
+      }),
+    [summary.controls, artifactSummary.items]
+  );
+
   const saveContext = () => {
     setSecurityContext({ role, actor });
     setStatus("Security context saved.");
@@ -203,6 +280,14 @@ export default function SecurityConsolePage() {
 
   const setRemediationState = (controlId, value) => {
     setRemediationProgress((prev) => ({ ...prev, [controlId]: value }));
+  };
+
+  const setArtifactPresent = (artifactId, value) => {
+    setArtifactChecks((prev) => ({ ...prev, [artifactId]: value }));
+  };
+
+  const setArtifactReference = (artifactId, value) => {
+    setArtifactRefs((prev) => ({ ...prev, [artifactId]: value }));
   };
 
   const exportSoc2Snapshot = () => {
@@ -244,6 +329,73 @@ export default function SecurityConsolePage() {
     setStatus("SOC 2 remediation plan downloaded.");
   };
 
+  const exportEvidenceBundle = () => {
+    if (!reviewerName.trim() || !reviewerSignoff) {
+      setStatus("Stage 9 export requires reviewer name and reviewer signoff.");
+      return;
+    }
+
+    const generatedAt = new Date().toISOString();
+    const bundleId = `soc2-bundle-${Date.now()}`;
+    const payload = {
+      bundleId,
+      generatedAt,
+      actor,
+      role,
+      reviewer: reviewerName,
+      reviewerSignoff,
+      auditPeriod: {
+        start: auditPeriodStart || "not-set",
+        end: auditPeriodEnd || "not-set",
+      },
+      readinessScore: summary.readinessScore,
+      artifactCoverage: artifactSummary.coverage,
+      requiredArtifactGaps: artifactSummary.requiredMissing,
+      artifacts: artifactSummary.items,
+      controlEvidenceMap,
+      remediationPlan,
+      disclaimer:
+        "Evidence bundle supports audit preparation and does not by itself guarantee SOC 2 attestation.",
+    };
+
+    const csvRows = [
+      ["artifact_id", "artifact_label", "required", "present", "reference"],
+      ...artifactSummary.items.map((item) => [
+        item.id,
+        item.label,
+        item.required ? "yes" : "no",
+        item.present ? "yes" : "no",
+        item.reference || "",
+      ]),
+    ];
+
+    const briefLines = [
+      "SafeRestore SOC 2 Evidence Bundle Brief",
+      `Bundle ID: ${bundleId}`,
+      `Generated At: ${generatedAt}`,
+      `Owner: ${actor}`,
+      `Reviewer: ${reviewerName}`,
+      `Audit Period: ${auditPeriodStart || "not-set"} to ${auditPeriodEnd || "not-set"}`,
+      `Readiness Score: ${summary.readinessScore}%`,
+      `Artifact Coverage: ${artifactSummary.coverage}%`,
+      `Open Control Gaps: ${summary.openGaps.length}`,
+      `Required Artifact Gaps: ${artifactSummary.requiredMissing.length}`,
+      "",
+      "Required artifact gaps:",
+      ...(artifactSummary.requiredMissing.length === 0
+        ? ["- None"]
+        : artifactSummary.requiredMissing.map((item) => `- ${item.id} ${item.label}`)),
+      "",
+      "Note: This bundle is for internal audit prep and requires auditor review.",
+    ].join("\n");
+
+    downloadJson(`${bundleId}.json`, payload);
+    downloadFile(`${bundleId}-artifact-index.csv`, toCsv(csvRows), "text/csv;charset=utf-8");
+    downloadFile(`${bundleId}-brief.txt`, briefLines, "text/plain;charset=utf-8");
+
+    setStatus("Stage 9 evidence bundle exported (JSON, CSV, and brief).");
+  };
+
   const checkAccess = async () => {
     setStatus("Checking RBAC...");
     const res = await apiFetch("/api/admin/rbac/check");
@@ -280,13 +432,7 @@ export default function SecurityConsolePage() {
     }
 
     const text = await res.text();
-    const blob = new Blob([text], { type: "application/json;charset=utf-8" });
-    const href = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = href;
-    a.download = `audit-export-${Date.now()}.json`;
-    a.click();
-    URL.revokeObjectURL(href);
+    downloadFile(`audit-export-${Date.now()}.json`, text, "application/json;charset=utf-8");
     setStatus("Audit export downloaded.");
   };
 
@@ -300,7 +446,7 @@ export default function SecurityConsolePage() {
       <div className="space-y-3">
         <h1 className="text-3xl font-semibold text-slate">Security Console</h1>
         <p className="text-base leading-relaxed text-slate-600">
-          Configure role context, track SOC 2 readiness controls, generate remediation plans, and verify RBAC/audit behavior.
+          Configure role context, track SOC 2 readiness controls, generate remediation plans, build audit evidence bundles, and verify RBAC/audit behavior.
         </p>
       </div>
 
@@ -458,6 +604,97 @@ export default function SecurityConsolePage() {
             ))}
           </div>
         )}
+      </section>
+
+      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-base font-semibold text-slate">Stage 9 evidence bundle builder</h2>
+          <button type="button" onClick={exportEvidenceBundle} className={secondaryButton}>
+            Export Evidence Bundle
+          </button>
+        </div>
+
+        <div className="grid gap-3 md:grid-cols-2">
+          <label className="grid gap-1 text-xs text-slate-600">
+            Audit Period Start
+            <input
+              type="date"
+              value={auditPeriodStart}
+              onChange={(event) => setAuditPeriodStart(event.target.value)}
+              className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate"
+            />
+          </label>
+          <label className="grid gap-1 text-xs text-slate-600">
+            Audit Period End
+            <input
+              type="date"
+              value={auditPeriodEnd}
+              onChange={(event) => setAuditPeriodEnd(event.target.value)}
+              className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate"
+            />
+          </label>
+          <label className="grid gap-1 text-xs text-slate-600 md:col-span-2">
+            Reviewer Name
+            <input
+              value={reviewerName}
+              onChange={(event) => setReviewerName(event.target.value)}
+              className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate"
+              placeholder="e.g., audit-manager-01"
+            />
+          </label>
+        </div>
+
+        <label className="flex items-center gap-2 text-xs text-slate-600">
+          <input
+            type="checkbox"
+            checked={reviewerSignoff}
+            onChange={(event) => setReviewerSignoff(event.target.checked)}
+          />
+          Reviewer signoff confirms evidence index was reviewed for completeness.
+        </label>
+
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
+          <div className="font-semibold text-slate">Evidence coverage: {artifactSummary.coverage}%</div>
+          {artifactSummary.requiredMissing.length === 0 ? (
+            <div className="text-emerald-700">All required artifacts are present.</div>
+          ) : (
+            <div>
+              Missing required artifacts: {artifactSummary.requiredMissing.map((item) => item.label).join(", ")}
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          {artifactSummary.items.map((artifact) => (
+            <div key={artifact.id} className="rounded-lg border border-slate-200 p-3">
+              <label className="flex items-center gap-2 text-xs text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={artifact.present}
+                  onChange={(event) => setArtifactPresent(artifact.id, event.target.checked)}
+                />
+                {artifact.label} {artifact.required ? "(required)" : "(optional)"}
+              </label>
+              <input
+                value={artifact.reference}
+                onChange={(event) => setArtifactReference(artifact.id, event.target.value)}
+                className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate"
+                placeholder="Reference path or URL (optional)"
+              />
+            </div>
+          ))}
+        </div>
+
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <div className="mb-2 text-sm font-semibold text-slate">Control-to-evidence map</div>
+          <ul className="space-y-1 text-xs text-slate-600">
+            {controlEvidenceMap.map((entry) => (
+              <li key={entry.controlId}>
+                <span className="font-semibold">{entry.controlId}</span> {entry.controlTitle}: {entry.mappedArtifacts.filter((artifact) => artifact.present).length}/{entry.mappedArtifacts.length} mapped artifacts present
+              </li>
+            ))}
+          </ul>
+        </div>
       </section>
 
       <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
