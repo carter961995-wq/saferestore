@@ -8,6 +8,12 @@ const CONTROL_STATUS_OPTIONS = [
   { value: "missing", label: "Missing" },
   { value: "na", label: "Not Applicable" },
 ];
+const REMEDIATION_STATUS_OPTIONS = [
+  { value: "not_started", label: "Not Started" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "blocked", label: "Blocked" },
+  { value: "done", label: "Done" },
+];
 
 const SOC2_CONTROLS = [
   {
@@ -73,6 +79,40 @@ function downloadJson(filename, data) {
   URL.revokeObjectURL(href);
 }
 
+function nextDateISO(daysFromNow) {
+  const date = new Date();
+  date.setDate(date.getDate() + daysFromNow);
+  return date.toISOString().slice(0, 10);
+}
+
+function getPriority(control) {
+  const highImpactCategories = ["Access Control", "Authentication", "Confidentiality"];
+  if (control.status === "missing" && highImpactCategories.includes(control.category)) {
+    return "High";
+  }
+  if (control.status === "missing") {
+    return "Medium";
+  }
+  return "Low";
+}
+
+function getTargetDays(priority) {
+  if (priority === "High") return 30;
+  if (priority === "Medium") return 60;
+  return 90;
+}
+
+function getActionHint(control) {
+  if (control.id === "cc6_1") return "Define role matrix and enforce least privilege checks.";
+  if (control.id === "cc6_2") return "Require named identities and remove shared accounts.";
+  if (control.id === "cc7_2") return "Standardize security logging fields and retention policy.";
+  if (control.id === "cc7_3") return "Document release approvals and evidence of change review.";
+  if (control.id === "a1_2") return "Test incident response and backup recovery runbooks.";
+  if (control.id === "c1_1") return "Apply data classification and access boundaries for sensitive data.";
+  if (control.id === "pi1_1") return "Add integrity checks and signed validation records.";
+  return "Document remediation steps and evidence owner.";
+}
+
 export default function SecurityConsolePage() {
   const initial = getSecurityContext();
   const [role, setRole] = useState(initial.role);
@@ -82,6 +122,8 @@ export default function SecurityConsolePage() {
   const [events, setEvents] = useState([]);
   const [controlStatus, setControlStatus] = useState(toInitialStatusMap);
   const [controlNotes, setControlNotes] = useState({});
+  const [remediationOwners, setRemediationOwners] = useState({});
+  const [remediationProgress, setRemediationProgress] = useState({});
 
   const summary = useMemo(() => {
     const controls = SOC2_CONTROLS.map((control) => ({
@@ -120,6 +162,28 @@ export default function SecurityConsolePage() {
     };
   }, [controlNotes, controlStatus]);
 
+  const remediationPlan = useMemo(
+    () =>
+      summary.openGaps.map((control) => {
+        const priority = getPriority(control);
+        const owner = remediationOwners[control.id] || actor || "unassigned";
+        const progress = remediationProgress[control.id] || "not_started";
+        return {
+          id: control.id,
+          category: control.category,
+          title: control.title,
+          gapStatus: control.status,
+          priority,
+          targetDate: nextDateISO(getTargetDays(priority)),
+          owner,
+          progress,
+          actionHint: getActionHint(control),
+          note: control.note || "",
+        };
+      }),
+    [actor, remediationOwners, remediationProgress, summary.openGaps]
+  );
+
   const saveContext = () => {
     setSecurityContext({ role, actor });
     setStatus("Security context saved.");
@@ -131,6 +195,14 @@ export default function SecurityConsolePage() {
 
   const setControlNote = (controlId, value) => {
     setControlNotes((prev) => ({ ...prev, [controlId]: value }));
+  };
+
+  const setRemediationOwner = (controlId, value) => {
+    setRemediationOwners((prev) => ({ ...prev, [controlId]: value }));
+  };
+
+  const setRemediationState = (controlId, value) => {
+    setRemediationProgress((prev) => ({ ...prev, [controlId]: value }));
   };
 
   const exportSoc2Snapshot = () => {
@@ -154,6 +226,22 @@ export default function SecurityConsolePage() {
 
     downloadJson(`soc2-readiness-${Date.now()}.json`, payload);
     setStatus("SOC 2 readiness snapshot downloaded.");
+  };
+
+  const exportRemediationPlan = () => {
+    const payload = {
+      generatedAt: new Date().toISOString(),
+      actor,
+      role,
+      readinessScore: summary.readinessScore,
+      totalGaps: remediationPlan.length,
+      remediationPlan,
+      disclaimer:
+        "Remediation plan is an operational tracker. Final control effectiveness requires evidence and review.",
+    };
+
+    downloadJson(`soc2-remediation-plan-${Date.now()}.json`, payload);
+    setStatus("SOC 2 remediation plan downloaded.");
   };
 
   const checkAccess = async () => {
@@ -212,7 +300,7 @@ export default function SecurityConsolePage() {
       <div className="space-y-3">
         <h1 className="text-3xl font-semibold text-slate">Security Console</h1>
         <p className="text-base leading-relaxed text-slate-600">
-          Configure role context, track SOC 2 readiness controls, and verify RBAC/audit behavior.
+          Configure role context, track SOC 2 readiness controls, generate remediation plans, and verify RBAC/audit behavior.
         </p>
       </div>
 
@@ -307,21 +395,69 @@ export default function SecurityConsolePage() {
             </div>
           ))}
         </div>
+      </section>
 
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-          <div className="mb-1 text-sm font-semibold text-slate">Open control gaps</div>
-          {summary.openGaps.length === 0 ? (
-            <p className="text-xs text-emerald-700">No open gaps for applicable controls.</p>
-          ) : (
-            <ul className="list-disc space-y-1 pl-5 text-xs text-slate-600">
-              {summary.openGaps.map((gap) => (
-                <li key={gap.id}>
-                  {gap.id} {gap.title} ({gap.status})
-                </li>
-              ))}
-            </ul>
-          )}
+      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-base font-semibold text-slate">Stage 8 remediation planner</h2>
+          <button type="button" onClick={exportRemediationPlan} className={secondaryButton}>
+            Export Remediation Plan
+          </button>
         </div>
+
+        {remediationPlan.length === 0 ? (
+          <p className="text-sm text-emerald-700">No open control gaps. Remediation plan is clear.</p>
+        ) : (
+          <div className="space-y-3">
+            {remediationPlan.map((item) => (
+              <div key={item.id} className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <div>
+                    <div className="text-sm font-semibold text-slate">{item.id} {item.title}</div>
+                    <div className="text-xs text-slate-500">{item.category} • {item.gapStatus}</div>
+                  </div>
+                  <div className={`rounded-full px-2 py-1 text-xs font-semibold ${item.priority === "High" ? "bg-red-100 text-red-700" : item.priority === "Medium" ? "bg-amber-100 text-amber-700" : "bg-slate-200 text-slate-700"}`}>
+                    {item.priority} Priority
+                  </div>
+                </div>
+                <p className="mb-3 text-sm text-slate-600">{item.actionHint}</p>
+                <div className="grid gap-3 md:grid-cols-3">
+                  <label className="grid gap-1 text-xs text-slate-600">
+                    Owner
+                    <input
+                      value={item.owner}
+                      onChange={(event) => setRemediationOwner(item.id, event.target.value)}
+                      className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate"
+                    />
+                  </label>
+                  <label className="grid gap-1 text-xs text-slate-600">
+                    Progress
+                    <select
+                      value={item.progress}
+                      onChange={(event) => setRemediationState(item.id, event.target.value)}
+                      className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate"
+                    >
+                      {REMEDIATION_STATUS_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <div className="grid gap-1 text-xs text-slate-600">
+                    <span>Target Date</span>
+                    <span className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate">
+                      {item.targetDate}
+                    </span>
+                  </div>
+                </div>
+                {item.note ? (
+                  <p className="mt-2 text-xs text-slate-500">Control note: {item.note}</p>
+                ) : null}
+              </div>
+            ))}
+          </div>
+        )}
       </section>
 
       <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
