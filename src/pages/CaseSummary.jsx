@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { logEvent } from "../lib/analytics.js";
+import { EVIDENCE_TEMPLATES, FIELD_LABELS } from "../lib/evidenceTemplates.js";
 
 function timestampIso() {
   return new Date().toISOString();
@@ -49,6 +50,20 @@ export default function CaseSummary() {
   const [packStatus, setPackStatus] = useState("");
   const [currentCaseId] = useState(caseIdFromTimestamp);
 
+  const [templateId, setTemplateId] = useState(EVIDENCE_TEMPLATES[0].id);
+  const [operatorName, setOperatorName] = useState("");
+  const [reviewerName, setReviewerName] = useState("");
+  const [evidenceSource, setEvidenceSource] = useState("");
+  const [incidentDate, setIncidentDate] = useState("");
+  const [jurisdiction, setJurisdiction] = useState("");
+  const [operatorSignoff, setOperatorSignoff] = useState(false);
+  const [reviewSignoff, setReviewSignoff] = useState(false);
+
+  const activeTemplate = useMemo(
+    () => EVIDENCE_TEMPLATES.find((template) => template.id === templateId) || EVIDENCE_TEMPLATES[0],
+    [templateId]
+  );
+
   const inputBase =
     "rounded-lg border bg-slate-50 px-3 py-2 text-sm text-slate focus:border-ocean focus:outline-none focus-visible:ring-2 focus-visible:ring-ocean/30";
   const primaryButton =
@@ -58,6 +73,20 @@ export default function CaseSummary() {
 
   const isWhatHappenedValid = whatHappened.trim().length > 0;
   const isIphoneModelValid = iphoneModel.trim().length > 0;
+
+  const fieldValueMap = {
+    operatorName,
+    reviewerName,
+    evidenceSource,
+    incidentDate,
+    jurisdiction,
+  };
+
+  const missingTemplateFields = activeTemplate.requiredFields.filter(
+    (field) => !String(fieldValueMap[field] || "").trim()
+  );
+
+  const isSignoffValid = operatorSignoff && reviewSignoff;
 
   useEffect(() => {
     const stored = localStorage.getItem("saferestore_caseData");
@@ -80,7 +109,15 @@ export default function CaseSummary() {
         "SafeRestore — Case Summary",
         "",
         `Case ID: ${currentCaseId}`,
+        `Template: ${activeTemplate.name}`,
         `Generated At (UTC): ${timestampIso()}`,
+        "",
+        "Evidence Workflow Context",
+        `• Operator: ${operatorName || "-"}`,
+        `• Reviewer: ${reviewerName || "-"}`,
+        `• Evidence Source: ${evidenceSource || "-"}`,
+        `• Incident Date: ${incidentDate || "-"}`,
+        `• Jurisdiction / Matter: ${jurisdiction || "-"}`,
         "",
         "Your Details",
         `• What happened?: ${whatHappened || "-"}`,
@@ -97,17 +134,30 @@ export default function CaseSummary() {
       ].join("\n"),
     [
       accessStatus,
+      activeTemplate.name,
       currentCaseId,
+      evidenceSource,
+      incidentDate,
       iosVersion,
       iphoneModel,
+      jurisdiction,
       notes,
+      operatorName,
       powersOn,
+      reviewerName,
       whatHappened,
     ]
   );
 
+  const validateRequired = () => {
+    const baseValid = isWhatHappenedValid && isIphoneModelValid;
+    const templateValid = missingTemplateFields.length === 0;
+    const signoffValid = isSignoffValid;
+    return baseValid && templateValid && signoffValid;
+  };
+
   const handleCopy = async () => {
-    if (!isWhatHappenedValid || !isIphoneModelValid) {
+    if (!validateRequired()) {
       setShowValidation(true);
       return;
     }
@@ -138,7 +188,7 @@ export default function CaseSummary() {
   };
 
   const exportLegalPack = async () => {
-    if (!isWhatHappenedValid || !isIphoneModelValid) {
+    if (!validateRequired()) {
       setShowValidation(true);
       return;
     }
@@ -149,7 +199,12 @@ export default function CaseSummary() {
     const casePayload = {
       caseId: currentCaseId,
       generatedAt,
-      operator: "Operator Name (placeholder)",
+      workflowTemplate: activeTemplate.id,
+      operator: operatorName,
+      reviewer: reviewerName,
+      evidenceSource,
+      incidentDate,
+      jurisdiction,
       sourceDevice: {
         model: iphoneModel || "unknown",
         iosVersion: iosVersion || "unknown",
@@ -160,6 +215,10 @@ export default function CaseSummary() {
       notes: notes || "",
       recommendedPath:
         "Use official Apple recovery and restore tools; no bypassing passcodes or encryption.",
+      signoff: {
+        operatorSignoff,
+        reviewSignoff,
+      },
     };
 
     const reportText = summaryText;
@@ -170,13 +229,19 @@ export default function CaseSummary() {
       {
         event: "Case Intake",
         timestamp: generatedAt,
-        actor: "System",
-        detail: "Case summary assembled from operator inputs.",
+        actor: operatorName || "Operator",
+        detail: "Case summary assembled from workflow template inputs.",
+      },
+      {
+        event: "Template Validation",
+        timestamp: timestampIso(),
+        actor: reviewerName || "Reviewer",
+        detail: `Required template fields validated for ${activeTemplate.name}.`,
       },
       {
         event: "Legal Pack Export",
         timestamp: timestampIso(),
-        actor: "System",
+        actor: operatorName || "Operator",
         detail: "Report, custody log, and manifest exported.",
       },
     ];
@@ -187,6 +252,8 @@ export default function CaseSummary() {
         { name: `custody-${currentCaseId}.csv`, sha256: "generated-at-export" },
         { name: `legal-pack-${currentCaseId}.json`, sha256: "self-referential" },
       ],
+      template: activeTemplate.id,
+      requiredFieldsSatisfied: activeTemplate.requiredFields,
       disclaimers: [
         "Tool assists analysis; operator procedure determines evidentiary reliability.",
         "No bypassing encryption, passcodes, or unauthorized access.",
@@ -226,7 +293,10 @@ export default function CaseSummary() {
       "application/json;charset=utf-8"
     );
 
-    logEvent("legal_pack_exported", { caseId: currentCaseId });
+    logEvent("legal_pack_exported", {
+      caseId: currentCaseId,
+      template: activeTemplate.id,
+    });
     setPackStatus("Legal pack downloaded.");
     window.setTimeout(() => setPackStatus(""), 3000);
   };
@@ -240,7 +310,15 @@ export default function CaseSummary() {
     setPowersOn("");
     setAccessStatus("");
     setNotes("");
+    setOperatorName("");
+    setReviewerName("");
+    setEvidenceSource("");
+    setIncidentDate("");
+    setJurisdiction("");
+    setOperatorSignoff(false);
+    setReviewSignoff(false);
     setPackStatus("");
+    setShowValidation(false);
   };
 
   return (
@@ -251,6 +329,85 @@ export default function CaseSummary() {
           This summary is designed to help you stay organized and communicate
           clearly with Apple Support or an authorized repair provider.
         </p>
+      </div>
+
+      <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 className="text-base font-semibold text-slate">Evidence Workflow Template</h2>
+        <label className="grid gap-2 text-sm text-slate-600">
+          Template
+          <select
+            value={templateId}
+            onChange={(event) => setTemplateId(event.target.value)}
+            className={`${inputBase} border-slate-200`}
+          >
+            {EVIDENCE_TEMPLATES.map((template) => (
+              <option key={template.id} value={template.id}>
+                {template.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className="grid gap-4 md:grid-cols-2 text-sm text-slate-600">
+          <label className="grid gap-2">
+            Operator Name
+            <input
+              className={`${inputBase} ${showValidation && missingTemplateFields.includes("operatorName") ? "border-red-300" : "border-slate-200"}`}
+              value={operatorName}
+              onChange={(event) => setOperatorName(event.target.value)}
+            />
+          </label>
+          <label className="grid gap-2">
+            Reviewer Name
+            <input
+              className={`${inputBase} ${showValidation && missingTemplateFields.includes("reviewerName") ? "border-red-300" : "border-slate-200"}`}
+              value={reviewerName}
+              onChange={(event) => setReviewerName(event.target.value)}
+            />
+          </label>
+          <label className="grid gap-2">
+            Evidence Source
+            <input
+              className={`${inputBase} ${showValidation && missingTemplateFields.includes("evidenceSource") ? "border-red-300" : "border-slate-200"}`}
+              value={evidenceSource}
+              onChange={(event) => setEvidenceSource(event.target.value)}
+              placeholder="e.g., iPhone 14 Pro serial XXXX"
+            />
+          </label>
+          <label className="grid gap-2">
+            Incident Date
+            <input
+              type="date"
+              className={`${inputBase} ${showValidation && missingTemplateFields.includes("incidentDate") ? "border-red-300" : "border-slate-200"}`}
+              value={incidentDate}
+              onChange={(event) => setIncidentDate(event.target.value)}
+            />
+          </label>
+          <label className="grid gap-2 md:col-span-2">
+            Jurisdiction / Matter
+            <input
+              className={`${inputBase} ${showValidation && missingTemplateFields.includes("jurisdiction") ? "border-red-300" : "border-slate-200"}`}
+              value={jurisdiction}
+              onChange={(event) => setJurisdiction(event.target.value)}
+              placeholder="Optional unless required by template"
+            />
+          </label>
+        </div>
+
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3 text-xs text-slate-600">
+          <div className="font-semibold mb-1">Template checklist</div>
+          <ul className="list-disc pl-5 space-y-1">
+            {activeTemplate.checklist.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        </div>
+
+        {showValidation && missingTemplateFields.length > 0 ? (
+          <div className="text-xs text-red-500">
+            Missing required template fields: {missingTemplateFields.map((field) => FIELD_LABELS[field]).join(", ")}
+          </div>
+        ) : null}
       </div>
 
       <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
@@ -337,6 +494,32 @@ export default function CaseSummary() {
           value={notes}
           onChange={(event) => setNotes(event.target.value)}
         />
+      </div>
+
+      <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 className="text-base font-semibold text-slate">Signoff Checkpoint</h2>
+        <p className="text-sm leading-relaxed text-slate-600">
+          Exports are enabled only after operator and review signoff.
+        </p>
+        <label className="flex items-center gap-2 text-sm text-slate-600">
+          <input
+            type="checkbox"
+            checked={operatorSignoff}
+            onChange={(event) => setOperatorSignoff(event.target.checked)}
+          />
+          Operator confirms workflow steps were followed.
+        </label>
+        <label className="flex items-center gap-2 text-sm text-slate-600">
+          <input
+            type="checkbox"
+            checked={reviewSignoff}
+            onChange={(event) => setReviewSignoff(event.target.checked)}
+          />
+          Reviewer confirms required fields and integrity notes are complete.
+        </label>
+        {showValidation && !isSignoffValid ? (
+          <div className="text-xs text-red-500">Both signoff checks are required.</div>
+        ) : null}
       </div>
 
       <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
