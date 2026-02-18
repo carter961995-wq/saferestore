@@ -87,6 +87,90 @@ export default function CaseSummary() {
   );
 
   const isSignoffValid = operatorSignoff && reviewSignoff;
+  const hasCustodyIdentifiers = Boolean(
+    operatorName.trim() && evidenceSource.trim() && incidentDate.trim()
+  );
+
+  const qualityChecks = useMemo(
+    () => [
+      {
+        key: "base_details",
+        label: "Required case details captured",
+        weight: 20,
+        passed: isWhatHappenedValid && isIphoneModelValid,
+      },
+      {
+        key: "template_fields",
+        label: "Template-required fields completed",
+        weight: 30,
+        passed: missingTemplateFields.length === 0,
+      },
+      {
+        key: "signoff",
+        label: "Operator and reviewer signoff completed",
+        weight: 25,
+        passed: isSignoffValid,
+      },
+      {
+        key: "custody_ids",
+        label: "Chain-of-custody identifiers present",
+        weight: 15,
+        passed: hasCustodyIdentifiers,
+      },
+      {
+        key: "reviewer_assigned",
+        label: "Reviewer identity recorded",
+        weight: 10,
+        passed: Boolean(reviewerName.trim()),
+      },
+    ],
+    [
+      hasCustodyIdentifiers,
+      isIphoneModelValid,
+      isSignoffValid,
+      isWhatHappenedValid,
+      missingTemplateFields.length,
+      reviewerName,
+    ]
+  );
+
+  const qualityScore = qualityChecks.reduce(
+    (total, check) => total + (check.passed ? check.weight : 0),
+    0
+  );
+
+  const missingControls = qualityChecks
+    .filter((check) => !check.passed)
+    .map((check) => check.label);
+
+  const readinessStatus = useMemo(() => {
+    const hasBlockingIssues =
+      !isWhatHappenedValid ||
+      !isIphoneModelValid ||
+      missingTemplateFields.length > 0 ||
+      !isSignoffValid;
+
+    if (hasBlockingIssues) {
+      return "No-Go";
+    }
+    if (qualityScore < 85) {
+      return "Conditional";
+    }
+    return "Go";
+  }, [
+    isIphoneModelValid,
+    isSignoffValid,
+    isWhatHappenedValid,
+    missingTemplateFields.length,
+    qualityScore,
+  ]);
+
+  const readinessToneClass =
+    readinessStatus === "Go"
+      ? "text-emerald-700 bg-emerald-50 border-emerald-200"
+      : readinessStatus === "Conditional"
+        ? "text-amber-700 bg-amber-50 border-amber-200"
+        : "text-red-700 bg-red-50 border-red-200";
 
   useEffect(() => {
     const stored = localStorage.getItem("saferestore_caseData");
@@ -118,6 +202,8 @@ export default function CaseSummary() {
         `• Evidence Source: ${evidenceSource || "-"}`,
         `• Incident Date: ${incidentDate || "-"}`,
         `• Jurisdiction / Matter: ${jurisdiction || "-"}`,
+        `• Evidence Quality Score: ${qualityScore}/100`,
+        `• Readiness Status: ${readinessStatus}`,
         "",
         "Your Details",
         `• What happened?: ${whatHappened || "-"}`,
@@ -146,6 +232,8 @@ export default function CaseSummary() {
       powersOn,
       reviewerName,
       whatHappened,
+      qualityScore,
+      readinessStatus,
     ]
   );
 
@@ -219,6 +307,11 @@ export default function CaseSummary() {
         operatorSignoff,
         reviewSignoff,
       },
+      quality: {
+        score: qualityScore,
+        readiness: readinessStatus,
+        missingControls,
+      },
     };
 
     const reportText = summaryText;
@@ -254,6 +347,10 @@ export default function CaseSummary() {
       ],
       template: activeTemplate.id,
       requiredFieldsSatisfied: activeTemplate.requiredFields,
+      quality: {
+        score: qualityScore,
+        readiness: readinessStatus,
+      },
       disclaimers: [
         "Tool assists analysis; operator procedure determines evidentiary reliability.",
         "No bypassing encryption, passcodes, or unauthorized access.",
@@ -296,6 +393,8 @@ export default function CaseSummary() {
     logEvent("legal_pack_exported", {
       caseId: currentCaseId,
       template: activeTemplate.id,
+      readinessStatus,
+      qualityScore,
     });
     setPackStatus("Legal pack downloaded.");
     window.setTimeout(() => setPackStatus(""), 3000);
@@ -520,6 +619,36 @@ export default function CaseSummary() {
         {showValidation && !isSignoffValid ? (
           <div className="text-xs text-red-500">Both signoff checks are required.</div>
         ) : null}
+      </div>
+
+      <div className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
+        <h2 className="text-base font-semibold text-slate">Evidence Quality and Readiness</h2>
+        <div className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${readinessToneClass}`}>
+          {readinessStatus}
+        </div>
+        <div className="text-sm text-slate-700">
+          Quality score: <span className="font-semibold">{qualityScore}/100</span>
+        </div>
+        <ul className="space-y-2 text-sm text-slate-600">
+          {qualityChecks.map((check) => (
+            <li
+              key={check.key}
+              className="flex items-start justify-between gap-4 rounded-lg border border-slate-100 bg-slate-50 px-3 py-2"
+            >
+              <span>{check.label}</span>
+              <span className={check.passed ? "text-emerald-700 font-semibold" : "text-slate-500"}>
+                {check.passed ? "Pass" : "Missing"}
+              </span>
+            </li>
+          ))}
+        </ul>
+        {missingControls.length > 0 ? (
+          <div className="text-xs text-slate-500">
+            Missing controls: {missingControls.join(", ")}
+          </div>
+        ) : (
+          <div className="text-xs text-emerald-700">No missing controls detected.</div>
+        )}
       </div>
 
       <div className="space-y-3 rounded-2xl border border-slate-200 bg-white p-6">
