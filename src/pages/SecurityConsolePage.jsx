@@ -148,6 +148,27 @@ function toCsv(rows) {
     .join("\n");
 }
 
+function buildPolicyText({ title, owner, approver, effectiveDate, controls, artifactCoverage, openGapCount, remediationCount, policyStatements, reviewCadence }) {
+  return [
+    title,
+    "",
+    `Owner: ${owner || "unassigned"}`,
+    `Approver: ${approver || "unassigned"}`,
+    `Effective Date: ${effectiveDate}`,
+    `Mapped Controls: ${controls.join(", ")}`,
+    `Artifact Coverage: ${artifactCoverage}%`,
+    `Open Control Gaps: ${openGapCount}`,
+    `Open Remediation Items: ${remediationCount}`,
+    "",
+    "Policy Statements",
+    ...policyStatements.map((line, idx) => `${idx + 1}. ${line}`),
+    "",
+    `Review Cadence: ${reviewCadence}`,
+    "",
+    "Document Note: This draft supports SOC 2 program operations and requires formal legal/compliance approval.",
+  ].join("\n");
+}
+
 export default function SecurityConsolePage() {
   const initial = getSecurityContext();
   const [role, setRole] = useState(initial.role);
@@ -165,6 +186,8 @@ export default function SecurityConsolePage() {
   const [auditPeriodEnd, setAuditPeriodEnd] = useState("");
   const [reviewerName, setReviewerName] = useState("");
   const [reviewerSignoff, setReviewerSignoff] = useState(false);
+  const [policyOwner, setPolicyOwner] = useState(initial.actor || "");
+  const [policyApprover, setPolicyApprover] = useState("");
 
   const summary = useMemo(() => {
     const controls = SOC2_CONTROLS.map((control) => ({
@@ -327,6 +350,93 @@ export default function SecurityConsolePage() {
 
     downloadJson(`soc2-remediation-plan-${Date.now()}.json`, payload);
     setStatus("SOC 2 remediation plan downloaded.");
+  };
+
+  const exportPolicyPack = () => {
+    if (!policyOwner.trim() || !policyApprover.trim()) {
+      setStatus("Stage 10 export requires policy owner and approver.");
+      return;
+    }
+
+    const generatedAt = new Date().toISOString();
+    const effectiveDate = new Date().toISOString().slice(0, 10);
+    const baseMetrics = {
+      artifactCoverage: artifactSummary.coverage,
+      openGapCount: summary.openGaps.length,
+      remediationCount: remediationPlan.length,
+    };
+
+    const accessPolicy = buildPolicyText({
+      title: "SafeRestore Access Control Policy (Draft)",
+      owner: policyOwner,
+      approver: policyApprover,
+      effectiveDate,
+      controls: ["cc6_1", "cc6_2", "c1_1"],
+      policyStatements: [
+        "Role-based access must be enforced for privileged and administrative actions.",
+        "Unique named identities are required; shared credentials are prohibited.",
+        "Access review evidence must be retained and linked to audit periods.",
+        "Confidential data access must follow least privilege assignment.",
+      ],
+      reviewCadence: "Quarterly or after material system change",
+      ...baseMetrics,
+    });
+
+    const incidentPolicy = buildPolicyText({
+      title: "SafeRestore Incident Response Policy (Draft)",
+      owner: policyOwner,
+      approver: policyApprover,
+      effectiveDate,
+      controls: ["cc7_2", "a1_2"],
+      policyStatements: [
+        "Security-relevant events must be logged with actor, timestamp, and outcome.",
+        "Incident triage and escalation procedures must be documented in a runbook.",
+        "Recovery and continuity testing outcomes must be recorded and reviewed.",
+        "Post-incident corrective actions must be tracked through remediation plans.",
+      ],
+      reviewCadence: "After each incident and at least annually",
+      ...baseMetrics,
+    });
+
+    const changePolicy = buildPolicyText({
+      title: "SafeRestore Change Management Policy (Draft)",
+      owner: policyOwner,
+      approver: policyApprover,
+      effectiveDate,
+      controls: ["cc7_3", "pi1_1"],
+      policyStatements: [
+        "Code and configuration changes require documented review and approval before release.",
+        "Change approvals and test evidence must be retained for audit periods.",
+        "Critical integrity checks must run before and after release of sensitive workflows.",
+        "Emergency changes require retrospective review and documented justification.",
+      ],
+      reviewCadence: "Monthly review of release evidence and exceptions",
+      ...baseMetrics,
+    });
+
+    const index = {
+      generatedAt,
+      owner: policyOwner,
+      approver: policyApprover,
+      readinessScore: summary.readinessScore,
+      artifactCoverage: artifactSummary.coverage,
+      openGapCount: summary.openGaps.length,
+      remediationCount: remediationPlan.length,
+      files: [
+        "policy-access-control.txt",
+        "policy-incident-response.txt",
+        "policy-change-management.txt",
+      ],
+      disclaimer:
+        "Policy pack contains operational draft documents and requires legal/compliance approval before formal adoption.",
+    };
+
+    downloadJson(`policy-pack-index-${Date.now()}.json`, index);
+    downloadFile("policy-access-control.txt", accessPolicy, "text/plain;charset=utf-8");
+    downloadFile("policy-incident-response.txt", incidentPolicy, "text/plain;charset=utf-8");
+    downloadFile("policy-change-management.txt", changePolicy, "text/plain;charset=utf-8");
+
+    setStatus("Stage 10 policy pack exported (index + 3 policy drafts).");
   };
 
   const exportEvidenceBundle = () => {
@@ -694,6 +804,38 @@ export default function SecurityConsolePage() {
               </li>
             ))}
           </ul>
+        </div>
+      </section>
+
+      <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-base font-semibold text-slate">Stage 10 policy pack generator</h2>
+          <button type="button" onClick={exportPolicyPack} className={secondaryButton}>
+            Export Policy Pack
+          </button>
+        </div>
+        <p className="text-sm text-slate-600">
+          Generate draft policy documents mapped to current control status, evidence coverage, and remediation load.
+        </p>
+        <div className="grid gap-3 md:grid-cols-2">
+          <label className="grid gap-1 text-xs text-slate-600">
+            Policy Owner
+            <input
+              value={policyOwner}
+              onChange={(event) => setPolicyOwner(event.target.value)}
+              className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate"
+              placeholder="e.g., security-program-owner"
+            />
+          </label>
+          <label className="grid gap-1 text-xs text-slate-600">
+            Policy Approver
+            <input
+              value={policyApprover}
+              onChange={(event) => setPolicyApprover(event.target.value)}
+              className="rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate"
+              placeholder="e.g., compliance-lead"
+            />
+          </label>
         </div>
       </section>
 
