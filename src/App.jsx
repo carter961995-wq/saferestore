@@ -17,6 +17,8 @@ import { logEvent } from "./lib/analytics.js";
 import PrivacyPolicy from "./pages/PrivacyPolicy.jsx";
 import TermsOfService from "./pages/TermsOfService.jsx";
 import Support from "./pages/Support.jsx";
+import GiveawayPage from "./pages/GiveawayPage.jsx";
+import AdminGiveawayPage from "./pages/AdminGiveawayPage.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import { blogPostMap } from "./content/blogPosts.js";
 
@@ -68,6 +70,11 @@ const pageSeo = {
     description:
       "Compare SafeRestore plans for guided recovery, advanced workflows, and enterprise readiness.",
   },
+  "/giveaway": {
+    title: "Promo Giveaway Claim",
+    description:
+      "Claim available SafeRestore promo giveaway licenses while inventory lasts.",
+  },
   "/case-summary": {
     title: "Case Summary",
     description:
@@ -87,6 +94,11 @@ const pageSeo = {
     title: "Support",
     description:
       "Contact SafeRestore support and find official help channels.",
+  },
+  "/admin/giveaway": {
+    title: "Admin Giveaway",
+    description:
+      "Manage giveaway key inventory, claims, and exports.",
   },
 };
 
@@ -175,10 +187,12 @@ export default function App() {
         <Route path="/blog/:slug" element={<BlogPostPage />} />
         <Route path="/security-console" element={<SecurityConsolePage />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/giveaway" element={<GiveawayPage />} />
         <Route path="/case-summary" element={<CaseSummary />} />
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/terms" element={<TermsOfService />} />
         <Route path="/support" element={<Support />} />
+        <Route path="/admin/giveaway" element={<AdminGiveawayPage />} />
         <Route path="/soc2" element={<Navigate to="/soc-2" replace />} />
         <Route path="/trust-center" element={<Navigate to="/trust" replace />} />
         <Route path="/privacy-policy" element={<Navigate to="/privacy" replace />} />

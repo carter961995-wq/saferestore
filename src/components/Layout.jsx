@@ -34,6 +34,9 @@ export default function Layout({ children }) {
             <NavLink to="/pricing" className={navLinkClass}>
               Pricing
             </NavLink>
+            <NavLink to="/giveaway" className={navLinkClass}>
+              Giveaway
+            </NavLink>
           </nav>
         </div>
       </header>
@@ -60,6 +63,10 @@ export default function Layout({ children }) {
             <span className="text-slate-400">•</span>
             <Link to="/blog" className="font-semibold text-slate-500 underline">
               Blog
+            </Link>
+            <span className="text-slate-400">•</span>
+            <Link to="/giveaway" className="font-semibold text-slate-500 underline">
+              Giveaway
             </Link>
           </div>
         </div>
